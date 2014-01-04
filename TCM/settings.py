@@ -112,6 +112,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join('.', 'templates'),
+    os.path.join('.', 'thirdParty'),
 )
 
 INSTALLED_APPS = (
@@ -156,3 +157,5 @@ LOGGING = {
         },
     }
 }
+
+STATIC_PATH = os.path.join('.', 'lib')

@@ -10,7 +10,7 @@ class Utility(object):
     get_value = staticmethod(get_value)    
     
     def get_bool_value(key, dictionary):
-        value = util.get_value(key, dictionary, 'False')
+        value = Utility.get_value(key, dictionary, 'False')
         return value == 'True'
     get_bool_value = staticmethod(get_bool_value)
     

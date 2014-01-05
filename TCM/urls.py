@@ -21,6 +21,6 @@ urlpatterns = patterns('',
     (r'^$', index), 
     (r'^lib/(?P<path>.*)$', 'django.views.static.serve', \
             {'document_root': settings.STATIC_PATH}),
-    (r'^templates/(?P<path>.html)$', 'django.views.static.serve', \
+    (r'^templates/(?P<path>.*)$', 'django.views.static.serve', \
             {'document_root': os.path.join('.', 'templates')}),
 )

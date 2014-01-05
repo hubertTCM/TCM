@@ -1,3 +1,5 @@
+import os
+
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 from views import index
@@ -19,4 +21,6 @@ urlpatterns = patterns('',
     (r'^$', index), 
     (r'^lib/(?P<path>.*)$', 'django.views.static.serve', \
             {'document_root': settings.STATIC_PATH}),
+    (r'^templates/(?P<path>.*)$', 'django.views.static.serve', \
+            {'document_root': os.path.join('.', 'templates')}),
 )

@@ -6,15 +6,24 @@ import codecs
 import re
 from urllib import urlopen
 from django.core.management import setup_environ
-#import settings
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
-sys.path.append(os.path.dirname(__file__))
-#setup_environ(settings)
-#from tcm.models import *
+
+def appendAncestorsToSystemPath(levels):
+	parentFolder = os.path.dirname(__file__)
+	for i in range(levels):
+		sys.path.append(parentFolder)
+		parentFolder = os.path.abspath(os.path.join(parentFolder,".."))
+		
+appendAncestorsToSystemPath(3)
+
+from dataImporter.Utils.Utility import *
 
 class Provider_fzl:
+	def __createConsilias(self, content):
+		pass
+	
 	def getAllConsilias(self):			
 		file = codecs.open('fzl.txt', 'r', 'utf-8', 'ignore')
 		content = file.read()
@@ -35,7 +44,9 @@ class Provider_fzl:
 			title = itemstart[index:]
 			#title = itemstart.split(u'、')[1].strip()
 			print title	
-			#exact(doctor, title, item)
+			consilia = {'comeFrom': {'category': u'Book', 'Name': u'范中林六经辨证医案'}, 'Author': u'范中林'}
+			
+			
 
 p = Provider_fzl()
 p.getAllConsilias()

@@ -24,5 +24,5 @@ urlpatterns = patterns('',
     (r'^templates/(?P<path>.*)$', 'django.views.static.serve', \
             {'document_root': os.path.join('.', 'templates')}),
                        
-    url(r'^allConsilias/', getAllConsilias),
+    url(r'^allConsilias/', get_all_consilias),
 )

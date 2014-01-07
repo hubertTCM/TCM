@@ -6,15 +6,15 @@ class Utility(object):
         dest.update(source)
     update_dict = staticmethod(update_dict)
     
-    def runActionWhenKeyExists(key, dictionary, action):
+    def run_action_when_key_exists(key, dictionary, action):
         if (key in dictionary):
             action(dictionary[key])
-    runActionWhenKeyExists = staticmethod(runActionWhenKeyExists)
+    run_action_when_key_exists = staticmethod(run_action_when_key_exists)
     
-    def applyDefaultIfNotExist(dest, default):
+    def apply_default_if_not_exist(dest, default):
         for key, value in default.items():
             if (not key in dest):
                 dest[key] = value
-    applyDefaultIfNotExist = staticmethod(applyDefaultIfNotExist)
+    apply_default_if_not_exist = staticmethod(apply_default_if_not_exist)
             
     

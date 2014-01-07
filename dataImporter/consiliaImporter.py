@@ -6,13 +6,13 @@ from django.core.management import setup_environ
 from ConsiliaProvider import provider_fzl
 from dataImporter.Utils.Utility import *
 
-def appendAncestorsToSystemPath(levels):
+def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
     for i in range(levels):
         sys.path.append(parent)
         parent = os.path.abspath(os.path.join(parent, ".."))
 
-appendAncestorsToSystemPath(2)
+append_ancestors_to_system_path(2)
 
 reload(sys)
 os.environ.update({"DJANGO_SETTINGS_MODULE":"TCM.settings"})
@@ -28,26 +28,26 @@ class Importer:
             self._consiliaInfo = consilia
             
             self._sourceInfoCreators = {}
-            self._sourceInfoCreators[u'Book'] = self.__createBookInfo__
-            self._sourceInfoCreators[u'Web'] = self.__createWebInfo__
+            self._sourceInfoCreators[u'Book'] = self.__create_book_info__
+            self._sourceInfoCreators[u'Web'] = self.__create_webInfo__
             
             defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
-            Utility.applyDefaultIfNotExist(self._consiliaInfo, defaultInfo)
+            Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
             
-        def __runActionWhenKeyExists(self, key, action):
-            Utility.runActionWhenKeyExists(key, self._consiliaInfo, action)
+        def __run_action_when_key_exists__(self, key, action):
+            Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
                 
-        def __createAuthor__(self, authorName):
+        def __create_author__(self, authorName):
             self._author = None 
             self._author, isCreated = Person.objects.get_or_create(name = authorName)
             if (isCreated):
                 self._author.save()
                 
-        def __createWebInfo__(self, sourceInfo):
+        def __create_webInfo__(self, sourceInfo):
             pass
              
         #{u'category': u'Book', u'name': u'范中林六经辨证医案'}                     
-        def __createBookInfo__(self, sourceInfo):
+        def __create_book_info__(self, sourceInfo):
             book, isCreated = Book.objects.get_or_create(title = sourceInfo[u'name'])
             if (isCreated):
                 book.category = u'Book'
@@ -55,7 +55,7 @@ class Importer:
             return book
                 
         #{'comeFrom': {u'category': u'Book', u'name': u'范中林六经辨证医案'}}        
-        def __createSource__(self, sourceInfo):
+        def __create_source__(self, sourceInfo):
             self._source = None
             if (not u'category' in sourceInfo):
                 return
@@ -65,7 +65,7 @@ class Importer:
             
                 
         # invoke this function when consilia object is ready            
-        def __createDiseasInfo__(self, diseasNames):
+        def __create_diseas_info__(self, diseasNames):
             for diseasName in diseasNames:
                 disease, isCreated = Disease.objects.get_or_create(name = diseasName)
                 if (isCreated):
@@ -77,7 +77,7 @@ class Importer:
                 diseaseConnection.disease = disease
                 diseaseConnection.save()
                     
-        def __createConsiliaSummary__(self):
+        def __create_consilia_summary__(self):
             self._consiliaSummary = ConsiliaSummary()
             self._consiliaSummary.author = self._author
             self._consiliaSummary.comeFrom = self._source     
@@ -86,7 +86,7 @@ class Importer:
             self._consiliaSummary.creationTime = self._consiliaInfo[u'creationTime'] 
             self._consiliaSummary.save()
             
-        def __createConsiliaDetail__(self, source):
+        def __create_consilia_detail__(self, source):
             detail = ConsiliaDetail()
             detail.consilia = self._consiliaSummary
             detail.index = source[u'index']
@@ -95,34 +95,34 @@ class Importer:
             detail.comments = source[u'comments']
             detail.save()                
             
-        def __createConsilia__(self):
-            self.__createConsiliaSummary__()
+        def __create_consilia__(self):
+            self.__create_consilia_summary__()
             
             detailDefault = {u'description' : None, u'comments' : None}
             for sourceDetail in self._consiliaInfo[u'details']:
-                Utility.applyDefaultIfNotExist(sourceDetail, detailDefault)
-                self.__createConsiliaDetail__(sourceDetail)
+                Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
+                self.__create_consilia_detail__(sourceDetail)
                
-        def uploadToDatabase(self):
-            self.__runActionWhenKeyExists(u'author', self.__createAuthor__)
-            self.__runActionWhenKeyExists(u'comeFrom', self.__createSource__)
+        def upload_to_database(self):
+            self.__run_action_when_key_exists__(u'author', self.__create_author__)
+            self.__run_action_when_key_exists__(u'comeFrom', self.__create_source__)
             
-            self.__createConsilia__()
+            self.__create_consilia__()
             
             # invoke after consilia is created
             
-            self.__runActionWhenKeyExists(u'diseaseName', self.__createDiseasInfo__)          
+            self.__run_action_when_key_exists__(u'diseaseName', self.__create_diseas_info__)          
     
     def __init__(self):
         self._consiliaSources = []
         self._consiliaSources.append(provider_fzl.Provider_fzl())
         
-    def importAllConsilias(self):
+    def import_all_consilias(self):
         for provider in self._consiliaSources:
-            for consilia in provider.getAllConsilias():
+            for consilia in provider.get_all_consilias():
                 impoter = Importer.SingleConsiliaImporter(consilia)
-                impoter.uploadToDatabase()
+                impoter.upload_to_database()
 
 importerInstance = Importer()
-importerInstance.importAllConsilias()
+importerInstance.import_all_consilias()
 print 'done'

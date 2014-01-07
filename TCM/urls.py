@@ -25,4 +25,5 @@ urlpatterns = patterns('',
             {'document_root': os.path.join('.', 'templates')}),
                        
     url(r'^allConsilias/', get_all_consilias),
+    url(r'^consiliaDetail/', get_consilia_detail),
 )

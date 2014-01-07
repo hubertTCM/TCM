@@ -16,3 +16,7 @@ def get_all_consilias(request):
     all_summarys = ConsiliaSummary.objects.defer("description").order_by('-creationTime').all()
     json_object = [item.json() for item in all_summarys]
     return generate_json_response( json_object )
+
+def get_consilia_detail(request):
+    id = request.GET['id']
+    #TBD

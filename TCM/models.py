@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import datetime
+import os
+import sys
+
 from django.db import models
 from django.db.models import Q
-import datetime
 
 """TCM = Traditional Chinese Medical"""
 class Person(models.Model):
@@ -17,21 +19,22 @@ SOURCE_CATEGORY = (
 
 class DataSource(models.Model):
     category = models.CharField(max_length=30, choices=SOURCE_CATEGORY)
+    
+DISEASE_CATEGORY = (
+    (u'TCM', u'中医'),
+    (u'Modern', u'西医')
+                    )
+class Disease(models.Model):
+    name = models.CharField(max_length = 50, primary_key=True)
+    category = models.CharField(max_length=20, choices = DISEASE_CATEGORY)
 
-class Book(DataSource):
-    def __init__(self, **kwargs):
-        DataSource.category = u'Book'
-        Model.__init__(self, **kwargs)
-        
+# do not rewrite __init___ in model class, otherwise, exception happens
+class Book(DataSource):  
     title = models.CharField(max_length=255)
     isbn = models.CharField(max_length=255, null = True)
     publishDate = models.DateField(null = True)
 
-class WebInfo(DataSource):
-    def __init__(self, **kwargs):
-        DataSource.category = u'Web'
-        Model.__init__(self, **kwargs)
-        
+class WebInfo(DataSource):        
     url = models.URLField(null = False)
          
 class ConsiliaSummary(models.Model):    
@@ -49,3 +52,10 @@ class ConsiliaDetail(models.Model):
     comments = models.TextField() 
     class Meta:
         unique_together = ['consilia', 'index'] # it is better to set primary key, however, it is not supported in django 1.4
+        
+class ConsiliaDiseaseConnection(models.Model):
+    consilia = models.ForeignKey(ConsiliaSummary)
+    disease = models.ForeignKey(Disease)
+    class Meta:
+        unique_together = ['consilia', 'disease']
+        

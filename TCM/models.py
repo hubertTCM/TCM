@@ -47,9 +47,9 @@ class ConsiliaSummary(models.Model):
 class ConsiliaDetail(models.Model):
     consilia = models.ForeignKey(ConsiliaSummary)
     index = models.IntegerField()    
-    description = models.TextField()
+    description = models.TextField(null = True)
     diagnosis = models.TextField()
-    comments = models.TextField() 
+    comments = models.TextField(null = True) 
     class Meta:
         unique_together = ['consilia', 'index'] # it is better to set primary key, however, it is not supported in django 1.4
         

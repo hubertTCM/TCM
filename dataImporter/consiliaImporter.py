@@ -31,6 +31,9 @@ class Importer:
             self._sourceInfoCreators[u'Book'] = self.__createBookInfo__
             self._sourceInfoCreators[u'Web'] = self.__createWebInfo__
             
+            defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
+            Utility.applyDefaultIfNotExist(self._consiliaInfo, defaultInfo)
+            
         def __runActionWhenKeyExists(self, key, action):
             Utility.runActionWhenKeyExists(key, self._consiliaInfo, action)
                 
@@ -64,17 +67,50 @@ class Importer:
         # invoke this function when consilia object is ready            
         def __createDiseasInfo__(self, diseasNames):
             for diseasName in diseasNames:
-                self._diseas, isCreated = Disease.objects.get_or_create(name = diseasName)
+                disease, isCreated = Disease.objects.get_or_create(name = diseasName)
                 if (isCreated):
-                    self._diseas.category = u'Modern'
-                    self._diseas.save() 
+                    disease.category = u'Modern'
+                    disease.save() 
+                    
+                diseaseConnection = ConsiliaDiseaseConnection()
+                diseaseConnection.consilia = self._consiliaSummary
+                diseaseConnection.disease = disease
+                diseaseConnection.save()
+                    
+        def __createConsiliaSummary__(self):
+            self._consiliaSummary = ConsiliaSummary()
+            self._consiliaSummary.author = self._author
+            self._consiliaSummary.comeFrom = self._source     
+            self._consiliaSummary.title = self._consiliaInfo[u'title'] 
+            self._consiliaSummary.description = self._consiliaInfo[u'description'] 
+            self._consiliaSummary.creationTime = self._consiliaInfo[u'creationTime'] 
+            self._consiliaSummary.save()
+            
+        def __createConsiliaDetail__(self, source):
+            detail = ConsiliaDetail()
+            detail.consilia = self._consiliaSummary
+            detail.index = source[u'index']
+            detail.description = source[u'description']
+            detail.diagnosis = source[u'diagnosis']
+            detail.comments = source[u'comments']
+            detail.save()                
+            
+        def __createConsilia__(self):
+            self.__createConsiliaSummary__()
+            
+            detailDefault = {u'description' : None, u'comments' : None}
+            for sourceDetail in self._consiliaInfo[u'details']:
+                Utility.applyDefaultIfNotExist(sourceDetail, detailDefault)
+                self.__createConsiliaDetail__(sourceDetail)
                
-    
         def uploadToDatabase(self):
             self.__runActionWhenKeyExists(u'author', self.__createAuthor__)
             self.__runActionWhenKeyExists(u'comeFrom', self.__createSource__)
             
-            #
+            self.__createConsilia__()
+            
+            # invoke after consilia is created
+            
             self.__runActionWhenKeyExists(u'diseaseName', self.__createDiseasInfo__)          
     
     def __init__(self):
@@ -89,3 +125,4 @@ class Importer:
 
 importerInstance = Importer()
 importerInstance.importAllConsilias()
+print 'done'

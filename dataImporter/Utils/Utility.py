@@ -10,5 +10,11 @@ class Utility(object):
         if (key in dictionary):
             action(dictionary[key])
     runActionWhenKeyExists = staticmethod(runActionWhenKeyExists)
+    
+    def applyDefaultIfNotExist(dest, default):
+        for key, value in default.items():
+            if (not key in dest):
+                dest[key] = value
+    applyDefaultIfNotExist = staticmethod(applyDefaultIfNotExist)
             
     

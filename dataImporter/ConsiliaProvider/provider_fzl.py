@@ -36,7 +36,8 @@ class Provider_fzl:
 			
 	def __exactDetail(self, whichTime, sourceText):
 		comment_keywords = (u'［按语］', u'［辨证］')
-		detail = {}
+		
+		detail = {u'index': whichTime}
 		for keyword in comment_keywords:
 			index = sourceText.find(keyword)
 			if(index >= 0):
@@ -54,8 +55,8 @@ class Provider_fzl:
 			self.__exactDetail(which_time, sourceText[:index - 2].strip())
 			self._createAllDetails(which_time + 1, sourceText[index - 2:].strip(), targetDetails)
 		else:
-			detailItem = self.__exactDetail(which_time, sourceText)
-			targetDetails.append((which_time, detailItem))
+			detailItem = self.__exactDetail(which_time, sourceText)			
+			targetDetails.append(detailItem)
 	
 	def __createConsilia(self, title, content):
 		content = content[content.index(title) + len(title):].strip()
@@ -78,7 +79,7 @@ class Provider_fzl:
 	
 	def _exactTitleInformation(self, sourceText):
 		titleInfo = {}
-		print "** title: " + sourceText
+		#print "** title: " + sourceText
 		index = sourceText.find(u'(')
 		if (index < 0):
 			titleInfo[u'title'] = sourceText.strip()
@@ -86,9 +87,9 @@ class Provider_fzl:
 			toIndex = len(sourceText) - 1
 			titleInfo[u'title'] = sourceText[0:index].strip()
 			titleInfo[u'diseaseName'] = [item.strip() for item in sourceText[index+1:toIndex].split(u'、')]
-			print "diseaseName: " +  " ## ".join(map(str, titleInfo['diseaseName']))			
+			#print "diseaseName: " +  " ## ".join(map(str, titleInfo['diseaseName']))			
 		
-		print "** TCM: " + titleInfo['title'] 
+		#print "** TCM: " + titleInfo['title'] 
 		return titleInfo
 	
 	def getAllConsilias(self):			

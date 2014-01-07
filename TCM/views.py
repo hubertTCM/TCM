@@ -14,5 +14,5 @@ def index(request):
 
 def get_all_consilias(request):
     all_summarys = ConsiliaSummary.objects.defer("description").order_by('-creationTime').all()
-    json_object = [generate_json_response(dir(item)) for item in all_summarys]
+    json_object = [item.json() for item in all_summarys]
     return generate_json_response( json_object )

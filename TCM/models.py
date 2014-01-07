@@ -44,6 +44,20 @@ class ConsiliaSummary(models.Model):
     description = models.TextField(null=True)
     comeFrom = models.ForeignKey(DataSource, null = True)
     
+    def json(self):
+        json_object = {}
+        json_object[u'id'] = self.id
+        json_object[u'author'] = self.author.name
+        json_object[u'title'] = self.title
+        if (self.creationTime != None):
+            json_object[u'creationTime'] = str(self.creationTime)
+        if (self.description):
+            json_object[u'description'] = self.description            
+        if (self.comeFrom):
+            json_object[u'source'] = self.comeFrom.category
+            json_object[u'source_id'] = self.comeFrom.id
+        return json_object
+    
 class ConsiliaDetail(models.Model):
     consilia = models.ForeignKey(ConsiliaSummary)
     index = models.IntegerField()    

@@ -1,7 +1,7 @@
 <div class="list-group">
 	<h2>{{title}}</h2>
 	<div class="list-group-item" data-ng-repeat="consilia in consilias">
-		<p data-ng-click="getConsiliaDetail(consilia.id);">
+		<p data-ng-click="toggleConsiliaDetail(consilia.id);">
 			<span>{{ consilia.author }}</span>
 			<span>{{ consilia.title }}</span>
 			<span>{{ consilia.creationTime }} </span>	

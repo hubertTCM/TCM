@@ -64,8 +64,19 @@ class ConsiliaDetail(models.Model):
     description = models.TextField(null = True)
     diagnosis = models.TextField()
     comments = models.TextField(null = True) 
+    
+    def json(self):
+        json_object = {'id' : self.id, 'consilia_id' : self.consilia.id, 'index' : self.index, 'diagnosis' : self.diagnosis}
+        if (self.description != None):
+            json_object['description'] = self.description
+        if (self.comments != None):
+            json_object['comments'] = self.comments        
+        return json_object
+    
     class Meta:
         unique_together = ['consilia', 'index'] # it is better to set primary key, however, it is not supported in django 1.4
+        
+        
         
 class ConsiliaDiseaseConnection(models.Model):
     consilia = models.ForeignKey(ConsiliaSummary)

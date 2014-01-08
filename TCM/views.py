@@ -18,5 +18,10 @@ def get_all_consilias(request):
     return generate_json_response( json_object )
 
 def get_consilia_detail(request):
-    id = request.GET['id']
-    #TBD
+    consilia_id = request.GET['id']
+    print 'consilia_id = ' + str(consilia_id)
+    summary = ConsiliaSummary.objects.get(id = consilia_id)
+    json_object = summary.json()
+    details = ConsiliaDetail.objects.filter(consilia = summary)
+    json_object['dtails'] = [detail.json() for detail in details]
+    return generate_json_response( json_object )

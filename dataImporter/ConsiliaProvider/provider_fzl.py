@@ -52,7 +52,8 @@ class Provider_fzl:
 	def _create_all_details__(self, which_time, sourceText, targetDetails):
 		index = sourceText.find(u'诊］', 3)
 		if (index > 0):
-			self.__exact_detail__(which_time, sourceText[:index - 2].strip())
+			detailItem = self.__exact_detail__(which_time, sourceText[:index - 2].strip())		
+			targetDetails.append(detailItem)
 			self._create_all_details__(which_time + 1, sourceText[index - 2:].strip(), targetDetails)
 		else:
 			detailItem = self.__exact_detail__(which_time, sourceText)			
@@ -93,7 +94,7 @@ class Provider_fzl:
 		return titleInfo
 	
 	def get_all_consilias(self):			
-		sourceFile = codecs.open(self._source_file_fullpath, 'utf-8', 'ignore')
+		sourceFile = codecs.open(self._source_file_fullpath, 'r', 'utf-8', 'ignore')
 		content = sourceFile.read()
 		sourceFile.close()
 	

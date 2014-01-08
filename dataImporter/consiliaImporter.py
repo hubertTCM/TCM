@@ -109,8 +109,7 @@ class Importer:
             
             self.__create_consilia__()
             
-            # invoke after consilia is created
-            
+            # invoke after consilia is created            
             self.__run_action_when_key_exists__(u'diseaseName', self.__create_diseas_info__)          
     
     def __init__(self):

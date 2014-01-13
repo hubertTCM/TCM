@@ -1,9 +1,15 @@
-<p data-ng-click = "toggleDetail()">
+<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
 	<span>{{ data.author }}</span>
 	<span> {{ data.title }}</span>
 	<span> {{ data.creationTime }}</span>
 </p>
 
-<div data-ng-show = "showDetail"> {{detail.description}}
+<div class="panel panel-default" data-ng-click = "toggleDetail()" data-ng-show = "showDetail"> 
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ detail.title }}</h3>
+  </div>
+  <div class="panel-body">
+	{{detail.description}}
+  </div>
 </div>
 

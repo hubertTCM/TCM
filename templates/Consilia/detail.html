@@ -10,10 +10,11 @@
   </div>
   
   <div class="panel-body">
-	{{data.description}}
+  	<p>
+		{{data.description}}
+	</p>
 	
-	<div class="viewSingleConsilaDetail" data-ng-repeat="detail in data.details">
-	</div>
+	<button type="button" class="btn btn-default pull-right" id="btn{{data.id}}">Default</button>
   </div>
 </div>
 

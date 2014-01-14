@@ -1,1 +1,2 @@
 ﻿医案 	consilia
+医话		medical notes

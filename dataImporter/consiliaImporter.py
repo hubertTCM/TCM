@@ -3,7 +3,8 @@ import os
 import sys
 from django.core.management import setup_environ
 
-from ConsiliaProvider import provider_fzl
+from ConsiliaProvider.provider_fzl import *
+from ConsiliaProvider.zmt import *
 from dataImporter.Utils.Utility import *
 
 def append_ancestors_to_system_path(levels):
@@ -34,6 +35,8 @@ class Importer:
             defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
             Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
             
+            self._source = None
+            
         def __run_action_when_key_exists__(self, key, action):
             Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
                 
@@ -57,11 +60,11 @@ class Importer:
         #{'comeFrom': {u'category': u'Book', u'name': u'范中林六经辨证医案'}}        
         def __create_source__(self, sourceInfo):
             self._source = None
-            if (not u'category' in sourceInfo):
+            if (not u'_source_foldery' in sourceInfo):
                 return
             category = sourceInfo[u'category']
             if (category in self._sourceInfoCreators):
-                self._source = self._sourceInfoCreators[category](sourceInfo)
+                self._source = self._sourceInfoCreators[category]
             
                 
         # invoke this function when consilia object is ready            
@@ -114,7 +117,8 @@ class Importer:
     
     def __init__(self):
         self._consiliaSources = []
-        self._consiliaSources.append(provider_fzl.Provider_fzl())
+        self._consiliaSources.append(Provider_fzl())
+        self._consiliaSources.append(Provider_zmt())
         
     def import_all_consilias(self):
         for provider in self._consiliaSources:

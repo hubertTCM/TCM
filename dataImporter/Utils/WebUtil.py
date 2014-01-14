@@ -24,14 +24,19 @@ class web_extractor(object):
     
     remove_redundant_space = staticmethod(remove_redundant_space)
 
-    def get_content_from(url):
-        item = urlopen(url)
-        content = item.read()
+    def escape(content):
         blank_items = [u'\xa0', '&nbsp;', '&nbsp']
         for blank_item in blank_items:
             content = content.replace(blank_item, u' ')
-        item.close()
         return web_extractor.remove_redundant_space(content)
+    
+    escape = staticmethod(escape)
+
+    def get_content_from(url):
+        item = urlopen(url)
+        content = item.read()
+        item.close()
+        return web_extractor.escape(content)
     
     get_content_from = staticmethod(get_content_from)
 
@@ -65,7 +70,7 @@ class web_extractor(object):
         if (target_attri_name is None or attribute_value is None):
             return None
         
-        print attribute_value
+        #print attribute_value
         return {target_attri_name : attribute_value}
         
     extract_single_attribute = staticmethod(extract_single_attribute)    
@@ -134,12 +139,17 @@ class web_extractor(object):
             
     get_values_from_html_tree = staticmethod(get_values_from_html_tree)
     
-    def get_html_root(url):
-        content = web_extractor.get_content_from(url)
+    def get_html_root_from_content(content):
         parser = etree.HTMLParser()
         html_tree = etree.parse(StringIO(content), parser)
         root = html_tree.getroot()
         return root
+    
+    get_html_root_from_content = staticmethod(get_html_root_from_content)        
+    
+    def get_html_root(url):
+        content = web_extractor.get_content_from(url)
+        return web_extractor.get_html_root_from_content(content)
     
     get_html_root = staticmethod(get_html_root)        
         

@@ -39,6 +39,13 @@ class Utility(object):
     
     append_if_not_none = staticmethod(append_if_not_none)
     
+    def remove_none_from(source_list):
+        if (list is None):
+            return None
+        return [item for item in source_list if item is not None]
+    
+    remove_none_from = staticmethod(remove_none_from)
+    
     def run_action_when_key_exists(key, dictionary, action):
         if (key in dictionary):
             return action(dictionary[key])

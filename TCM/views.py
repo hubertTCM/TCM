@@ -23,5 +23,5 @@ def get_consilia_detail(request):
     summary = ConsiliaSummary.objects.get(id = consilia_id)
     json_object = summary.json()
     details = ConsiliaDetail.objects.filter(consilia = summary)
-    json_object['dtails'] = [detail.json() for detail in details]
+    json_object['details'] = [detail.json() for detail in details]
     return generate_json_response( json_object )

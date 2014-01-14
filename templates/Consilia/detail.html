@@ -1,4 +1,4 @@
-<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
+﻿<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
 	<span>{{ data.author }}</span>
 	<span> {{ data.title }}</span>
 	<span> {{ data.creationTime }}</span>
@@ -14,7 +14,9 @@
 		{{data.description}}
 	</p>
 	
-	<button type="button" class="btn btn-default pull-right" id="btn{{data.id}}">Default</button>
+	<p id="btnContainer{{data.id}}">
+		<button type="button" class="btn btn-default pull-right" data-ng-show = "showNext" data-ng-click="next()">复诊</button>
+	<p>
   </div>
 </div>
 

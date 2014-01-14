@@ -1,0 +1,10 @@
+﻿<div>
+	<p>{{data.description}}</p>	
+	<p> 
+		<button type="button" class="btn btn-default pull-center" data-ng-hide = "shouldShowDiagnosis" data-ng-click="showDiagnosis()">处方：</button>
+	</p>
+	<div data-ng-show = "shouldShowDiagnosis">
+		<p>{{data.diagnosis}}</p>
+		<p>{{data.comments}}</p>
+	</div>
+</div>

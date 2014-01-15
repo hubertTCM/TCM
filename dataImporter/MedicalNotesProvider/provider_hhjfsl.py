@@ -45,9 +45,9 @@ class SummaryProvider:
                                         ]
                 }
         
-    def __get_value_from__(self, key, dicts):
+    def __get_attribute_value__(self, attribute_name, dicts):
         url_dict = Utility.get_value('extract_attributes', dicts)
-        return  Utility.get_value(key, url_dict)     
+        return  Utility.get_value(attribute_name, url_dict)     
         
     def __get_page_count__(self, html_root):
         # <div class="pages">
@@ -63,8 +63,7 @@ class SummaryProvider:
         if (items is None):
             return 1
         
-        page_counts = [Utility.run_action_when_key_exists('extract_attributes', provider, Utility.get_value(key, url_dict)) for provider in items if provider is not None]
-        #page_counts = [self.__get_value_from__('page_count', provider) for provider in items if provider is not None]
+        page_counts = [self.__get_attribute_value__('page_count', provider) for provider in items if provider is not None]
         page_counts = Utility.remove_none_from(page_counts)
         
         page_count = 1
@@ -105,3 +104,4 @@ class SummaryProvider:
     
 p = SummaryProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
 p.get_summarys()
+print "done"

@@ -1,6 +1,12 @@
+<h2>{{title}}</h2>
 <div class="list-group">
-	<h2>{{title}}</h2>
 	<div class="list-group-item" data-ng-repeat="item in consilias">	
 		<div class="singleConsilia"></div>		
 	</div>
 </div>
+
+<ul class="pagination">
+  <li><a href="#">&laquo;</a></li>
+  <li data-ng-repeat="page in pages"><a href="#">{{page}}</a></li>
+  <li><a href="#">&raquo;</a></li>
+</ul>

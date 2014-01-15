@@ -12,9 +12,14 @@ def generate_json_response(json_object):
 def index(request):
     return render_to_response('index.html', {}, RequestContext(request, {}))
 
+#very inefficient, should be updated later.
 def get_all_consilias(request):
-    all_summarys = ConsiliaSummary.objects.defer("description").order_by('-creationTime').all()
-    json_object = [item.json() for item in all_summarys]
+    from_index = request.GET['from']
+    to = request.GET['to']
+    all_result = ConsiliaSummary.objects.defer("description").order_by('-creationTime').all()
+    all_summarys = all_result[from_index : to]
+    summarys_json = [item.json() for item in all_summarys]
+    json_object = {'totalCount' : all_result.count(), 'summarys' : summarys_json}
     return generate_json_response( json_object )
 
 def get_consilia_detail(request):

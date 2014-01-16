@@ -22,10 +22,11 @@ class PageProvider:
                             'xpath' : '//div[@class="pages"]/a',
                             'extract_attributes':[{'target_attri_name':'page_count'}] # root url http://www.hhjfsl.com/jfbbs
                         }
-    def __get_attribute_value__(self, attribute_name, dicts):
-        url_dict = Utility.get_value('extract_attributes', dicts)
         
+    def __get_attribute_value__(self, attribute_name, dicts):
+        url_dict = Utility.get_value('extract_attributes', dicts)        
         return  Utility.get_value(attribute_name, url_dict) 
+    
     def __get_page_count__(self, root):
         items = web_extractor.get_values_from_html_tree(root, self._config)
         if (items is None):
@@ -84,8 +85,7 @@ class SummaryProvider:
                                         ]
                 }   
         
-       
-    
+           
     def get_summarys(self):
         items = web_extractor.get_values_from_html_tree(self._root, self._config)
         if (items is None):
@@ -94,10 +94,54 @@ class SummaryProvider:
         summarys = Utility.remove_none_from(summarys)
         
         return summarys
+    
+class DetailProvider:
+    def __init__(self, summary):
+        self._url = None
+        self._summary = summary
+        self._config = {'xpath' :'//*[@id="read_tpc"]', 
+                        'extract_attributes':[{'target_attri_name':'content', 'include_text_from_descendant' : True}] }
+        self._detail = {}
+        
+        self.__init_detail_url__()
+        
+    def __init_detail_url__(self):
+        try:
+            uid_info = Utility.get_value('author_uid_link', self._summary) #u.php?uid=587
+            uid_info = uid_info.replace(u'u.php?', u'')
+            if( uid_info.find(u"uid=")< 0):
+                return None
+                
+            detail_url = Utility.get_value('source_sub_link', self._summary) # url like: read.php?tid=18922&fpage=2
+            detail_url = re.sub(ur"&fpage=\d{1,2}", ur"", detail_url) #remove the &gpage=2
+        
+            #http://www.hhjfsl.com/jfbbs/read.php?tid=18922&uid=587&ds=1&toread=1
+            self._url = r'http://www.hhjfsl.com/jfbbs/' + detail_url +'&'+uid_info+'&ds=1&toread=1'
+        except Exception,ex:
+            print "exception from get_detail_url#", Exception,":",ex
+        return None
+    
+    def get_detail(self):
+        if (self._url is None):
+            return
+        
+        root = web_extractor.get_html_root(self._url)
+        items = web_extractor.get_values_from_html_tree(root, self._config)
+        if (items is None):
+            return
+        detials = [Utility.get_value('extract_attributes', provider) for provider in items]
+        detials = Utility.remove_none_from(detials)
+        print detials
+        return self._detail    
+    
 
 page_provider = PageProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
 for page_root in page_provider.get_page_roots():
     s = SummaryProvider(page_root)
     items = s.get_summarys()
+    for item in items:
+        d = DetailProvider(item)
+        d.get_detail()
     print items
+    break
 print "done"

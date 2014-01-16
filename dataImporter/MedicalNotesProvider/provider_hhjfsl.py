@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+import datetime
 import sys
 import os
 import codecs
@@ -80,11 +81,16 @@ class SummaryProvider:
                     'xpath':'//tr[@class="tr3"]',
                     'extract_attributes':[{'xpath':'./td[2]/a', 'target_attri_name':'title'},
                                           {'xpath':'./td[2]/a', 'source_attri' : 'href', 'target_attri_name':'source_sub_link'},
-                                          {'xpath':'./td[3]/p', 'target_attri_name':'create_time'},
+                                          {'xpath':'./td[3]/p', 'target_attri_name':'creationTime'},
                                           {'xpath':'./td[3]/a', 'source_attri' : 'href', 'target_attri_name':'author_uid_link'},
+                                          {'xpath':'./td[3]/a', 'target_attri_name':'author'},
                                         ]
                 }   
-        
+
+    def __convert_time__(self, timeString):
+        t = time.strptime(timeString, "%Y-%m-%d")
+        converted_time = datetime.datetime(*t[:6])#time.strptime(timeString, "%Y-%m-%d") 
+        return converted_time        
            
     def get_summarys(self):
         items = web_extractor.get_values_from_html_tree(self._root, self._config)
@@ -92,18 +98,22 @@ class SummaryProvider:
             return
         summarys = [Utility.get_value('extract_attributes', provider) for provider in items]
         summarys = Utility.remove_none_from(summarys)
-        
+        for summary_item in summarys:
+            summary_item['creationTime'] = self.__convert_time__(summary_item['creationTime'])
         return summarys
     
 class DetailProvider:
     def __init__(self, summary):
-        self._url = None
         self._summary = summary
+        self.__init_detail_url__()
+        
         self._config = {'xpath' :'//*[@id="read_tpc"]', 
                         'extract_attributes':[{'target_attri_name':'content', 'include_text_from_descendant' : True}] }
         self._detail = {}
+        self._detail[u'author'] = Utility.get_value('author', self._summary)
+        self._detail[u'title'] = Utility.get_value('title', self._summary)
+        self._detail[u'comeFrom'] = {u'category': u'web', u'url': self._url}
         
-        self.__init_detail_url__()
         
     def __init_detail_url__(self):
         try:
@@ -113,7 +123,7 @@ class DetailProvider:
                 return None
                 
             detail_url = Utility.get_value('source_sub_link', self._summary) # url like: read.php?tid=18922&fpage=2
-            detail_url = re.sub(ur"&fpage=\d{1,2}", ur"", detail_url) #remove the &gpage=2
+            detail_url = re.sub(ur"&fpage=\detail_provider{1,2}", ur"", detail_url) #remove the &gpage=2
         
             #http://www.hhjfsl.com/jfbbs/read.php?tid=18922&uid=587&ds=1&toread=1
             self._url = r'http://www.hhjfsl.com/jfbbs/' + detail_url +'&'+uid_info+'&ds=1&toread=1'
@@ -129,21 +139,28 @@ class DetailProvider:
         items = web_extractor.get_values_from_html_tree(root, self._config)
         if (items is None):
             return
-        print items
-        detials = [Utility.get_value('extract_attributes', provider) for provider in items]
-        detials = Utility.remove_none_from(detials)
-        print self._url
-        #print detials
+        details = [Utility.get_value('extract_attributes', provider) for provider in items]
+        details = Utility.remove_none_from(details)
+        if (len(details) != 1):
+            print "*error*"
+            
+        self._detail[u'content'] = Utility.get_value('content', details[0]) 
         return self._detail    
     
-
-page_provider = PageProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
-for page_root in page_provider.get_page_roots():
-    s = SummaryProvider(page_root)
-    items = s.get_summarys()
-    for item in items:
-        d = DetailProvider(item)
-        d.get_detail()
-    #print items
-    #break
+class HHJFSLNotesProvider:
+    def __init__(self, url):
+        self._url = url
+        
+    def get_all_notes(self):        
+        page_provider = PageProvider(self._url)
+        for page_root in page_provider.get_page_roots():
+            summary_provider = SummaryProvider(page_root)
+            items = summary_provider.get_summarys()
+            for item in items:
+                detail_provider = DetailProvider(item)
+                yield detail_provider.get_detail()
+                
+p = HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
+for note in p.get_all_notes():
+    print note
 print "done"

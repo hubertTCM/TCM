@@ -12,7 +12,7 @@ class Utility(object):
     
     def get_bool_value(key, dictionary):
         value = Utility.get_value(key, dictionary, 'False')
-        return value == 'True'
+        return str(value) == 'True'
     
     get_bool_value = staticmethod(get_bool_value)
 

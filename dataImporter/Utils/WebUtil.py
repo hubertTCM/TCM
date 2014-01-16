@@ -4,7 +4,7 @@ import os
 import re
 from lxml import etree
 from StringIO import StringIO
-from urllib import urlopen
+from urllib2 import urlopen
 
 reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -35,7 +35,7 @@ class web_extractor(object):
     def get_content_from(url):
         item = urlopen(url)
         content = item.read()
-        item.close()
+        #item.close()
         return web_extractor.escape(content)
     
     get_content_from = staticmethod(get_content_from)

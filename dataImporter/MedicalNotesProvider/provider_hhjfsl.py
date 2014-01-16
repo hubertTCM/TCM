@@ -129,9 +129,11 @@ class DetailProvider:
         items = web_extractor.get_values_from_html_tree(root, self._config)
         if (items is None):
             return
+        print items
         detials = [Utility.get_value('extract_attributes', provider) for provider in items]
         detials = Utility.remove_none_from(detials)
-        print detials
+        print self._url
+        #print detials
         return self._detail    
     
 
@@ -142,6 +144,6 @@ for page_root in page_provider.get_page_roots():
     for item in items:
         d = DetailProvider(item)
         d.get_detail()
-    print items
-    break
+    #print items
+    #break
 print "done"

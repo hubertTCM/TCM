@@ -79,17 +79,17 @@ class Provider_zmt:
         return consilias
                            
     def get_all_consilias(self):
+        consilias = []
         for file_name in self._source_file_names:
             source_file = codecs.open(file_name, 'r', 'big5', 'ignore')
             content = source_file.read()
             source_file.close()
-            content = web_extractor.escape(content)
+            #content = web_extractor.escape(content)
             root = BeautifulSoup(content)
-            consilias = []
             consilias.extend(self.__get_consilias_from__(root))
         return consilias
     
-temp = Provider_zmt()
-temp.get_all_consilias()
-print "done"    
+# temp = Provider_zmt()
+# temp.get_all_consilias()
+# print "zmt done"    
             

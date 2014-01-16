@@ -18,20 +18,18 @@ append_ancestors_to_system_path(2)
 reload(sys)
 os.environ.update({"DJANGO_SETTINGS_MODULE":"TCM.settings"})
 
-import TCM.settings
-from TCM.models import *
+from DataSourceImporter import *
 
+from TCM.models import *
+import TCM.settings
 setup_environ(TCM.settings)
 
 class Importer:
     class SingleConsiliaImporter:
         def __init__(self, consilia):
+            self._sourceImporter = SourceImporter()
             self._consiliaInfo = consilia
-            
-            self._sourceInfoCreators = {}
-            self._sourceInfoCreators[u'Book'] = self.__create_book_info__
-            self._sourceInfoCreators[u'Web'] = self.__create_webInfo__
-            
+                        
             defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
             Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
             
@@ -45,28 +43,7 @@ class Importer:
             self._author, isCreated = Person.objects.get_or_create(name = authorName)
             if (isCreated):
                 self._author.save()
-                
-        def __create_webInfo__(self, sourceInfo):
-            pass
-             
-        #{u'category': u'Book', u'name': u'范中林六经辨证医案'}                     
-        def __create_book_info__(self, sourceInfo):
-            book, isCreated = Book.objects.get_or_create(title = sourceInfo[u'name'])
-            if (isCreated):
-                book.category = u'Book'
-                book.save()                    
-            return book
-                
-        #{'comeFrom': {u'category': u'Book', u'name': u'范中林六经辨证医案'}}        
-        def __create_source__(self, sourceInfo):
-            self._source = None
-            if (not u'_source_foldery' in sourceInfo):
-                return
-            category = sourceInfo[u'category']
-            if (category in self._sourceInfoCreators):
-                self._source = self._sourceInfoCreators[category]
-            
-                
+                      
         # invoke this function when consilia object is ready            
         def __create_diseas_info__(self, diseasNames):
             for diseasName in diseasNames:
@@ -108,7 +85,7 @@ class Importer:
                
         def upload_to_database(self):
             self.__run_action_when_key_exists__(u'author', self.__create_author__)
-            self.__run_action_when_key_exists__(u'comeFrom', self.__create_source__)
+            self._source = self.__run_action_when_key_exists__(u'comeFrom', self._sourceImporter.import_source)
             
             self.__create_consilia__()
             

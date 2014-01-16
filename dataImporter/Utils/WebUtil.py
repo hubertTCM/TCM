@@ -2,6 +2,7 @@
 import sys
 import os
 import re
+import time
 from lxml import etree
 from StringIO import StringIO
 from urllib2 import urlopen
@@ -33,10 +34,17 @@ class web_extractor(object):
     escape = staticmethod(escape)
 
     def get_content_from(url):
-        item = urlopen(url)
-        content = item.read()
-        #item.close()
-        return web_extractor.escape(content)
+        tried_time = 0;
+        while tried_time < 10:
+            try:
+                item = urlopen(url)
+                content = item.read()
+                #item.close()
+                return web_extractor.escape(content)
+            except Exception,ex:
+                print "exception from get_detail_url#", Exception,":",ex
+                tried_time += 1
+                time.sleep( tried_time )
     
     get_content_from = staticmethod(get_content_from)
 

@@ -4,8 +4,13 @@ from django.template import RequestContext
 from django.utils import simplejson
 from TCM.models import *
 
+class HTMLUtility:
+    def convert_nl_to_html_format(content):
+        return content.replace('\n', '<br/><br/>')
+    convert_nl_to_html_format = staticmethod(convert_nl_to_html_format)           
 
-def generate_json_response(json_object):
+
+def generate_json_response(json_object):        
     to_output = simplejson.dumps(json_object, ensure_ascii = False)
     return HttpResponse(to_output, mimetype = 'application/json')
 
@@ -46,4 +51,5 @@ def get_medical_note_detail(request):
     print 'medical_note_id = ' + str(note_id)
     detail = MedicalNote.objects.get(id = note_id)
     json_object = detail.json()
+    #json_object['content'] = HTMLUtility.convert_nl_to_html_format(json_object['content'])
     return generate_json_response( json_object )

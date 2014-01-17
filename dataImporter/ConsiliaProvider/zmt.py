@@ -85,6 +85,7 @@ class Provider_zmt:
             source_file = codecs.open(file_name, 'r', 'big5', 'ignore')
             content = source_file.read()
             source_file.close()
+            content = web_extractor.escape(content)
             root = BeautifulSoup(content)
             
             temp_consilias = self.__get_consilias_from__(root)

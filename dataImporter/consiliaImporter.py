@@ -27,7 +27,7 @@ setup_environ(TCM.settings)
 class Importer:
     class SingleConsiliaImporter:
         def __init__(self, consilia):
-            self._sourceImporter = SourceImporter()
+            self._source_importer = SourceImporter()
             self._consiliaInfo = consilia
                         
             defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
@@ -90,7 +90,7 @@ class Importer:
             self.__run_action_when_key_exists__(u'debug_source', self.__debug_info__)
             
             self.__run_action_when_key_exists__(u'author', self.__create_author__)
-            self._source = self.__run_action_when_key_exists__(u'comeFrom', self._sourceImporter.import_source)
+            self._source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
             
             self.__create_consilia__()
             

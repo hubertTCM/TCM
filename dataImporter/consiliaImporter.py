@@ -82,13 +82,8 @@ class Importer:
             for sourceDetail in self._consiliaInfo[u'details']:
                 Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
                 self.__create_consilia_detail__(sourceDetail)
-               
-        def __debug_info__(self, info):
-            print info 
-            
-        def upload_to_database(self):
-            self.__run_action_when_key_exists__(u'debug_source', self.__debug_info__)
-            
+                           
+        def upload_to_database(self):            
             self.__run_action_when_key_exists__(u'author', self.__create_author__)
             self._source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
             
@@ -105,8 +100,12 @@ class Importer:
     def import_all_consilias(self):
         for provider in self._consiliaSources:
             for consilia in provider.get_all_consilias():
-                impoter = Importer.SingleConsiliaImporter(consilia)
-                impoter.upload_to_database()
+                try:
+                    impoter = Importer.SingleConsiliaImporter(consilia)
+                    impoter.upload_to_database()             
+                except Exception,ex:
+                    print "***" + str(consilia)
+                    print Exception,":",ex
 
 importerInstance = Importer()
 importerInstance.import_all_consilias()

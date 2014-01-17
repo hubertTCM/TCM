@@ -64,3 +64,4 @@ class MedicalNotesImporter:
                 
 i = MedicalNotesImporter()
 i.import_all()
+print "done"

@@ -36,6 +36,27 @@ class Book(DataSource):
 
 class WebInfo(DataSource):        
     url = models.URLField(null = False)
+    
+class MedicalNote(models.Model):  
+    author = models.ForeignKey(Person)
+    title = models.CharField(max_length=255)
+    content = models.TextField(null=True)
+    creationTime = models.DateField(null = True)
+    comeFrom = models.ForeignKey(DataSource, null = True)
+    
+    def json(self):
+        json_object = {}
+        json_object[u'id'] = self.id
+        json_object[u'author'] = self.author.name
+        json_object[u'title'] = self.title
+        json_object[u'content'] = self.content
+         
+        if (self.creationTime != None):
+            json_object[u'creationTime'] = str(self.creationTime)          
+        if (self.comeFrom):
+            json_object[u'source'] = self.comeFrom.category
+            json_object[u'source_id'] = self.comeFrom.id
+        return json_object
          
 class ConsiliaSummary(models.Model):    
     author = models.ForeignKey(Person, null = True)

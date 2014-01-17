@@ -112,6 +112,7 @@ class DetailProvider:
         self._detail = {}
         self._detail[u'author'] = Utility.get_value('author', self._summary)
         self._detail[u'title'] = Utility.get_value('title', self._summary)
+        self._detail[u'creationTime'] = Utility.get_value('creationTime', self._summary)
         self._detail[u'comeFrom'] = {u'category': u'web', u'url': self._url}
         
         
@@ -160,7 +161,7 @@ class HHJFSLNotesProvider:
                 detail_provider = DetailProvider(item)
                 yield detail_provider.get_detail()
                 
-p = HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
-for note in p.get_all_notes():
-    print note
-print "done"
+# p = HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
+# for note in p.get_all_notes():
+#     print note
+# print "done"

@@ -5,6 +5,7 @@ from django.core.management import setup_environ
 
 from MedicalNotesProvider.provider_hhjfsl import *
 from dataImporter.Utils.Utility import *
+from DataSourceImporter import *
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -22,13 +23,44 @@ from TCM.models import *
 
 setup_environ(TCM.settings)
 
+class SingleNoteImporter:
+    def __init__(self, source):
+        self._note_source = source
+        self._author_importer = PersonImporter()
+        self._source_importer = SourceImporter()
+    
+    def __is_valid__(self):
+        if (Utility.get_value('title', self._note_source) == None):
+            return False
+        return True
+        
+    def import_note(self):  
+        if (not self.__is_valid__()):
+            print "*invalid item" + str(self._note_source)
+            return
+        
+        note = MedicalNote()      
+        note.author = Utility.run_action_when_key_exists(u'author', self._note_source, self._author_importer.import_person)
+        note.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._note_source, self._source_importer.import_source)
+        note.content = self._note_source[u'content']
+        note.title = self._note_source[u'title']
+        note.creationTime = Utility.get_value('creationTime', self._note_source)
+        note.save()
+        
+
 class MedicalNotesImporter:
     def __init__(self):
-        self._providers = []
-        self._providers.append(HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13"))
+        self._notes_source = []
+        self._notes_source.append(HHJFSLNotesProvider(r"http://www.hhjfsl.com/jfbbs/thread.php?fid=13"))
         
     def import_all(self):
-        pass
-
+        for source_provider in self._notes_source:
+            for note in source_provider.get_all_notes():
+                try:
+                    importer = SingleNoteImporter(note)
+                    importer.import_note()                
+                except Exception,ex:
+                    print Exception,":",ex
+                
 i = MedicalNotesImporter()
 i.import_all()

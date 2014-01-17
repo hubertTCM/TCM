@@ -17,6 +17,14 @@ import TCM.settings
 from TCM.models import *
 setup_environ(TCM.settings)
 
+class PersonImporter:
+    def import_person(self, name):
+        person, isCreated = Person.objects.get_or_create(name = name)
+        if (isCreated):
+            person.save()
+            
+        return person
+
 class SourceImporter:
     def __init__(self):
         self._sourceInfoCreators = {}
@@ -24,7 +32,12 @@ class SourceImporter:
         self._sourceInfoCreators[u'Web'] = self.__create_webInfo__
         
     def __create_webInfo__(self, sourceInfo):
-        pass
+        web, isCreated = WebInfo.objects.get_or_create(url = sourceInfo[u'url'])
+        if (isCreated):
+            web.category = u'Web'
+            web.save()                    
+        return web
+
          
     #{u'category': u'Book', u'name': u'范中林六经辨证医案'}                     
     def __create_book_info__(self, sourceInfo):

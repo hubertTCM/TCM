@@ -26,4 +26,7 @@ urlpatterns = patterns('',
                        
     url(r'^allConsilias/', get_all_consilias),
     url(r'^consiliaDetail/', get_consilia_detail),
+    
+    url(r'^allMedicalNotes/', get_all_medical_notes),
+    url(r'^medicalNoteDetail/', get_medical_note_detail),
 )

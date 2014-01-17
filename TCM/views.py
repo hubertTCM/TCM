@@ -30,3 +30,20 @@ def get_consilia_detail(request):
     details = ConsiliaDetail.objects.filter(consilia = summary)
     json_object['details'] = [detail.json() for detail in details]
     return generate_json_response( json_object )
+
+def get_all_medical_notes(request):
+    from_index = request.GET['from']
+    to = request.GET['to']
+    all_result = MedicalNote.objects.defer("content").order_by('-creationTime').all()
+    all_summarys = all_result[from_index : to]
+    summarys_json = [item.json() for item in all_summarys]
+    json_object = {'totalCount' : all_result.count(), 'summarys' : summarys_json}
+    return generate_json_response( json_object )
+
+
+def get_medical_note_detail(request):
+    note_id = request.GET['id']
+    print 'medical_note_id = ' + str(note_id)
+    detail = MedicalNote.objects.get(id = note_id)
+    json_object = detail.json()
+    return generate_json_response( json_object )

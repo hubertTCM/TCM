@@ -1,4 +1,4 @@
-
+import re
 class Utility(object):
     def get_value(key, dictionary, default_value = None):
         if (dictionary is None):
@@ -59,5 +59,22 @@ class Utility(object):
                 dest[key] = value
                 
     apply_default_if_not_exist = staticmethod(apply_default_if_not_exist)
+      
+    def remove_redundant_space(source):
+        content = source.replace('&nbsp', u' ')
+        content = re.sub(' +', ' ', source)
+        content = re.sub('\n +', '\n', content)
+        content = re.sub(u'\n+', u'\n', content)
+        return content
+    
+    remove_redundant_space = staticmethod(remove_redundant_space)
+
+    def escape(content):
+        blank_items = [u'\xa0', '&nbsp;', '&nbsp']
+        for blank_item in blank_items:
+            content = content.replace(blank_item, u' ')
+        return Utility.remove_redundant_space(content)
+    
+    escape = staticmethod(escape)
             
     

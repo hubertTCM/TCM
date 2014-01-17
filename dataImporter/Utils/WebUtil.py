@@ -16,23 +16,6 @@ from Utility import *
   
 
 class web_extractor(object):
-    def remove_redundant_space(source):
-        content = source.replace('&nbsp', u' ')
-        content = re.sub(' +', ' ', source)
-        content = re.sub('\n +', '\n', content)
-        content = re.sub(u'\n+', u'\n', content)
-        return content
-    
-    remove_redundant_space = staticmethod(remove_redundant_space)
-
-    def escape(content):
-        blank_items = [u'\xa0', '&nbsp;', '&nbsp']
-        for blank_item in blank_items:
-            content = content.replace(blank_item, u' ')
-        return web_extractor.remove_redundant_space(content)
-    
-    escape = staticmethod(escape)
-
     def get_content_from(url):
         tried_time = 0;
         while tried_time < 10:
@@ -40,7 +23,7 @@ class web_extractor(object):
                 item = urlopen(url)
                 content = item.read()
                 #item.close()
-                return web_extractor.escape(content)
+                return Utility.escape(content)
             except Exception,ex:
                 print "exception from get_detail_url#", Exception,":",ex
                 tried_time += 1

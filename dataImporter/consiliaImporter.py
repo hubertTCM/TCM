@@ -106,7 +106,8 @@ class Importer:
                 except Exception,ex:
                     print "***" + str(consilia)
                     print Exception,":",ex
-
-importerInstance = Importer()
-importerInstance.import_all_consilias()
-print 'done'
+                    
+if __name__ == "__main__":
+    importerInstance = Importer()
+    importerInstance.import_all_consilias()
+    print 'done'

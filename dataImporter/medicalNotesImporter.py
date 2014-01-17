@@ -61,7 +61,8 @@ class MedicalNotesImporter:
                     importer.import_note()                
                 except Exception,ex:
                     print Exception,":",ex
-                
-i = MedicalNotesImporter()
-i.import_all()
-print "done"
+   
+if __name__ == "__main__":             
+    i = MedicalNotesImporter()
+    i.import_all()
+    print "done"

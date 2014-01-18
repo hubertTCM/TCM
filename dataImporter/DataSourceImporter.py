@@ -28,8 +28,8 @@ class PersonImporter:
 class SourceImporter:
     def __init__(self):
         self._sourceInfoCreators = {}
-        self._sourceInfoCreators[u'Book'] = self.__create_book_info__
-        self._sourceInfoCreators[u'Web'] = self.__create_webInfo__
+        self._sourceInfoCreators[u'book'] = self.__create_book_info__
+        self._sourceInfoCreators[u'web'] = self.__create_webInfo__
         
     def __create_webInfo__(self, sourceInfo):
         web, isCreated = WebInfo.objects.get_or_create(url = sourceInfo[u'url'])
@@ -50,7 +50,7 @@ class SourceImporter:
     def import_source(self, sourceInfo):
         if (not u'category' in sourceInfo):
             return
-        category = sourceInfo[u'category']
+        category = sourceInfo[u'category'].lower()
         if (category in self._sourceInfoCreators):
             return self._sourceInfoCreators[category](sourceInfo)
         return None

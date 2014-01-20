@@ -10,6 +10,6 @@
 
 <ul class="pagination">
   <li><a data-ng-click="previous()">&laquo;</a></li>
-  <li data-ng-repeat="page in pages"><a data-ng-click="navigateToPage(page - 1)">{{page}}</a></li>
+  <li data-ng-repeat="page in pages"><a data-ng-href="{{page.path}}">{{page.pageNumber}}</a></li>
   <li><a data-ng-click="next()">&raquo;</a></li>
 </ul>

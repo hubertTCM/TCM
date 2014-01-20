@@ -1,2 +1,6 @@
 ﻿医案 	consilia
 医话		medical notes
+条文		clause
+经方		Classical Prescriptions
+伤寒论	Treatise on Febrile Diseases
+金匮要略	synopsis of prescriptions of the golden chamber

@@ -23,17 +23,13 @@ class PageProvider:
                             'xpath' : '//div[@class="pages"]/a',
                             'extract_attributes':[{'target_attri_name':'page_count'}] # root url http://www.hhjfsl.com/jfbbs
                         }
-        
-    def __get_attribute_value__(self, attribute_name, dicts):
-        url_dict = Utility.get_value('extract_attributes', dicts)        
-        return  Utility.get_value(attribute_name, url_dict) 
-    
+            
     def __get_page_count__(self, root):
         items = web_extractor.get_values_from_html_tree(root, self._config)
         if (items is None):
             return 1
          
-        page_counts = [self.__get_attribute_value__('page_count', provider) for provider in items if provider is not None]
+        page_counts = [Utility.get_value('page_count', provider) for provider in items if provider is not None]
         page_counts = Utility.remove_none_from(page_counts)
          
         page_count = 1
@@ -93,10 +89,9 @@ class SummaryProvider:
         return converted_time        
            
     def get_summarys(self):
-        items = web_extractor.get_values_from_html_tree(self._root, self._config)
-        if (items is None):
+        summarys = web_extractor.get_values_from_html_tree(self._root, self._config)
+        if (summarys is None):
             return
-        summarys = [Utility.get_value('extract_attributes', provider) for provider in items]
         summarys = Utility.remove_none_from(summarys)
         for summary_item in summarys:
             summary_item['creationTime'] = self.__convert_time__(summary_item['creationTime'])
@@ -137,10 +132,9 @@ class DetailProvider:
             return
         
         root = web_extractor.get_html_root(self._url)
-        items = web_extractor.get_values_from_html_tree(root, self._config)
-        if (items is None):
+        details = web_extractor.get_values_from_html_tree(root, self._config)
+        if (details is None):
             return
-        details = [Utility.get_value('extract_attributes', provider) for provider in items]
         details = Utility.remove_none_from(details)
         if (len(details) != 1):
             print "*error*"
@@ -160,8 +154,9 @@ class HHJFSLNotesProvider:
             for item in items:
                 detail_provider = DetailProvider(item)
                 yield detail_provider.get_detail()
-                
-# p = HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
-# for note in p.get_all_notes():
-#     print note
-# print "done"
+    
+if __name__ == "__main__":             
+    p = HHJFSLNotesProvider("http://www.hhjfsl.com/jfbbs/thread.php?fid=13")
+    for note in p.get_all_notes():
+        print note
+    print "done"

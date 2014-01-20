@@ -120,9 +120,9 @@ class web_extractor(object):
                 attributes_key = 'extract_attributes'
                 if (attributes_key in config):
                     attributes_value = web_extractor.extract_attributes(element, config[attributes_key])
-                    Utility.update_dictionary_if_not_none(attributes_key, attributes_value, value_item)
-                    
-                all_values.append(value_item)
+                    #Utility.update_dictionary_if_not_none(attributes_key, attributes_value, value_item)
+                Utility.append_if_not_none(attributes_value, all_values)    
+                #all_values.append(value_item)
                 
             if len(all_values) > 0:
                 return all_values

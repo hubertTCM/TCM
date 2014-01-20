@@ -1,4 +1,4 @@
-<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
+﻿<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
 	<span>{{ data.author }}</span>
 	<span> {{ data.title }}</span>
 	<span> {{ data.creationTime }}</span>
@@ -11,5 +11,6 @@
   
   <div class="panel-body">
   	<p data-ng-bind-html="data.content"></p>
+	<a class="pull-right" data-ng-href="{{editPath}}">编辑</a>
   </div>
 </div>

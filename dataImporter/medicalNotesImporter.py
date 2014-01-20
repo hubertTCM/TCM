@@ -57,12 +57,15 @@ class MedicalNotesImporter:
         for source_provider in self._notes_source:
             for note in source_provider.get_all_notes():
                 try:
+                    print "running"
                     importer = SingleNoteImporter(note)
                     importer.import_note()                
                 except Exception,ex:
                     print Exception,":",ex
    
-if __name__ == "__main__":             
+   
+if __name__ == "__main__":      
+    print "start"       
     i = MedicalNotesImporter()
     i.import_all()
     print "done"

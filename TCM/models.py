@@ -96,12 +96,15 @@ class ConsiliaDetail(models.Model):
     
     class Meta:
         unique_together = ['consilia', 'index'] # it is better to set primary key, however, it is not supported in django 1.4
-        
-        
-        
+                
 class ConsiliaDiseaseConnection(models.Model):
     consilia = models.ForeignKey(ConsiliaSummary)
     disease = models.ForeignKey(Disease)
     class Meta:
         unique_together = ['consilia', 'disease']
+        
+class Clause(models.Model): 
+    index = models.IntegerField(null = False)
+    content = models.TextField(null = False)
+    comeFrom = models.ForeignKey(Book, null = False)
         

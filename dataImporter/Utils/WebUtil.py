@@ -17,17 +17,20 @@ from Utility import *
 
 class web_extractor(object):
     def get_content_from(url):
-        tried_time = 0;
+        tried_time = 0
+        waited_time = 1
         while tried_time < 10:
             try:
+                print "loading data from: " + url
                 item = urlopen(url)
                 content = item.read()
-                #item.close()
+                item.close()
                 return Utility.escape(content)
             except Exception,ex:
                 print "exception from get_detail_url#", Exception,":",ex
                 tried_time += 1
-                time.sleep( tried_time )
+                waited_time = waited_time * 2
+                time.sleep( waited_time )
     
     get_content_from = staticmethod(get_content_from)
 

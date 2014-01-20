@@ -51,5 +51,5 @@ def get_medical_note_detail(request):
     print 'medical_note_id = ' + str(note_id)
     detail = MedicalNote.objects.get(id = note_id)
     json_object = detail.json()
-    #json_object['content'] = HTMLUtility.convert_nl_to_html_format(json_object['content'])
+    json_object['content'] = HTMLUtility.convert_nl_to_html_format(json_object['content'])
     return generate_json_response( json_object )

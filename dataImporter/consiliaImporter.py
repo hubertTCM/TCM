@@ -24,74 +24,74 @@ from TCM.models import *
 import TCM.settings
 setup_environ(TCM.settings)
 
-class Importer:
-    class SingleConsiliaImporter:
-        def __init__(self, consilia):
-            self._source_importer = SourceImporter()
-            self._consiliaInfo = consilia
-                        
-            defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
-            Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
+class SingleConsiliaImporter:
+    def __init__(self, consilia):
+        self._source_importer = SourceImporter()
+        self._consiliaInfo = consilia
+                    
+        defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
+        Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
+        
+        self._source = None
+        
+    def __run_action_when_key_exists__(self, key, action):
+        return Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
             
-            self._source = None
-            
-        def __run_action_when_key_exists__(self, key, action):
-            Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
-                
-        def __create_author__(self, authorName):
-            self._author = None 
-            self._author, isCreated = Person.objects.get_or_create(name = authorName)
+    def __create_author__(self, authorName):
+        self._author = None 
+        self._author, isCreated = Person.objects.get_or_create(name = authorName)
+        if (isCreated):
+            self._author.save()
+                  
+    # invoke this function when consilia object is ready            
+    def __create_diseas_info__(self, diseasNames):
+        for diseasName in diseasNames:
+            disease, isCreated = Disease.objects.get_or_create(name = diseasName)
             if (isCreated):
-                self._author.save()
-                      
-        # invoke this function when consilia object is ready            
-        def __create_diseas_info__(self, diseasNames):
-            for diseasName in diseasNames:
-                disease, isCreated = Disease.objects.get_or_create(name = diseasName)
-                if (isCreated):
-                    disease.category = u'Modern'
-                    disease.save() 
-                    
-                diseaseConnection = ConsiliaDiseaseConnection()
-                diseaseConnection.consilia = self._consiliaSummary
-                diseaseConnection.disease = disease
-                diseaseConnection.save()
-                    
-        def __create_consilia_summary__(self):
-            self._consiliaSummary = ConsiliaSummary()
-            self._consiliaSummary.author = self._author
-            self._consiliaSummary.comeFrom = self._source     
-            self._consiliaSummary.title = self._consiliaInfo[u'title'] 
-            self._consiliaSummary.description = self._consiliaInfo[u'description'] 
-            self._consiliaSummary.creationTime = self._consiliaInfo[u'creationTime'] 
-            self._consiliaSummary.save()
-            
-        def __create_consilia_detail__(self, source):
-            detail = ConsiliaDetail()
-            detail.consilia = self._consiliaSummary
-            detail.index = source[u'index']
-            detail.description = source[u'description']
-            detail.diagnosis = source[u'diagnosis']
-            detail.comments = source[u'comments']
-            detail.save()                
-            
-        def __create_consilia__(self):
-            self.__create_consilia_summary__()
-            
-            detailDefault = {u'description' : None, u'comments' : None}
-            for sourceDetail in self._consiliaInfo[u'details']:
-                Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
-                self.__create_consilia_detail__(sourceDetail)
-                           
-        def upload_to_database(self):            
-            self.__run_action_when_key_exists__(u'author', self.__create_author__)
-            self._source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
-            
-            self.__create_consilia__()
-            
-            # invoke after consilia is created            
-            self.__run_action_when_key_exists__(u'diseaseName', self.__create_diseas_info__)          
-    
+                disease.category = u'Modern'
+                disease.save() 
+                
+            diseaseConnection = ConsiliaDiseaseConnection()
+            diseaseConnection.consilia = self._consiliaSummary
+            diseaseConnection.disease = disease
+            diseaseConnection.save()
+                
+    def __create_consilia_summary__(self):
+        self._consiliaSummary = ConsiliaSummary()
+        self._consiliaSummary.author = self._author
+        self._consiliaSummary.comeFrom = self._source     
+        self._consiliaSummary.title = self._consiliaInfo[u'title'] 
+        self._consiliaSummary.description = self._consiliaInfo[u'description'] 
+        self._consiliaSummary.creationTime = self._consiliaInfo[u'creationTime'] 
+        self._consiliaSummary.save()
+        
+    def __create_consilia_detail__(self, source):
+        detail = ConsiliaDetail()
+        detail.consilia = self._consiliaSummary
+        detail.index = source[u'index']
+        detail.description = source[u'description']
+        detail.diagnosis = source[u'diagnosis']
+        detail.comments = source[u'comments']
+        detail.save()                
+        
+    def __create_consilia__(self):
+        self.__create_consilia_summary__()
+        
+        detailDefault = {u'description' : None, u'comments' : None}
+        for sourceDetail in self._consiliaInfo[u'details']:
+            Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
+            self.__create_consilia_detail__(sourceDetail)
+                       
+    def upload_to_database(self):            
+        self.__run_action_when_key_exists__(u'author', self.__create_author__)
+        self._source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
+        
+        self.__create_consilia__()
+        
+        # invoke after consilia is created            
+        self.__run_action_when_key_exists__(u'diseaseName', self.__create_diseas_info__)          
+
+class Importer:  
     def __init__(self):
         self._consiliaSources = []
         self._consiliaSources.append(Provider_fzl())
@@ -101,7 +101,7 @@ class Importer:
         for provider in self._consiliaSources:
             for consilia in provider.get_all_consilias():
                 try:
-                    impoter = Importer.SingleConsiliaImporter(consilia)
+                    impoter = SingleConsiliaImporter(consilia)
                     impoter.upload_to_database()             
                 except Exception,ex:
                     print "***" + str(consilia)

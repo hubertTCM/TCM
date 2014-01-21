@@ -1,9 +1,6 @@
-<div class="panel panel-primary"> 
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ data.title }}</h3>
-  </div>
-  
-  <div class="panel-body">
-  	<p data-ng-bind-html="data.content"></p>
-  </div>
+<div class="input-group">
+  <span class="input-group-addon">标题</span>
+  <input type="text" class="form-control" value="{{data.title}}">
 </div>
+<p></p>
+<textarea class="form-control" rows ="40" data-ng-bind-html="data.content"></textarea>

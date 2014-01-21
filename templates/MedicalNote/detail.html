@@ -1,8 +1,8 @@
-﻿<p data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
-	<span>{{ data.author }}</span>
-	<span> {{ data.title }}</span>
-	<span> {{ data.creationTime }}</span>
-</p>
+﻿<div class ="row" data-ng-click = "toggleDetail()" data-ng-hide="showDetail">
+	<div class="col-md-2"> {{ data.author }} </div>
+	<div class="col-md-8"> {{ data.title }} </div>
+	<div class="col-md-2"> {{ data.creationTime }} </div>
+</div>
 
 <div class="panel panel-primary" data-ng-show = "showDetail"> 
   <div class="panel-heading" data-ng-click = "toggleDetail()">
@@ -12,8 +12,8 @@
   <div class="panel-body">
   	<p data-ng-bind-html="data.content"></p>
   	<p class="pull-right" >
-		<a data-ng-click="edit()">编辑</a>
-		<a data-ng-click="delete()">删除</a>
+		<button class="btn btn-primary" data-ng-click="edit()">编辑</button>
+		<button class="btn btn-primary" data-ng-click="delete()">删除</button>
 	</p>
   </div>
 </div>

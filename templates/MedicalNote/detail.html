@@ -11,6 +11,9 @@
   
   <div class="panel-body">
   	<p data-ng-bind-html="data.content"></p>
-	<a class="pull-right" data-ng-href="{{editPath}}">编辑</a>
+  	<p class="pull-right" >
+		<a data-ng-click="edit()">编辑</a>
+		<a data-ng-click="delete()">删除</a>
+	</p>
   </div>
 </div>

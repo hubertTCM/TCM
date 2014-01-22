@@ -1,0 +1,18 @@
+<h2>{{title}}</h2>
+
+<div class="input-append pull-right">
+ <input class="search-query input-medium"  name="search_query" type="text" placeholder="Arama Yap" >
+ <button class="btn btn-large" type="button"></button>
+</div>
+
+<div class="list-group">
+	<div class="list-group-item" data-ng-repeat="data in allSummarys">	
+		 <div class = "medicalRelatedDetail"></div>
+	</div>
+</div>
+
+<ul class="pagination">
+  <li><a data-ng-click="previous()">&laquo;</a></li>
+  <li data-ng-repeat="page in pages"><a data-ng-href="{{page.path}}">{{page.pageNumber}}</a></li>
+  <li><a data-ng-click="next()">&raquo;</a></li>
+</ul>

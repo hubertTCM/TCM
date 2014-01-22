@@ -3,4 +3,10 @@
   <input type="text" class="form-control" value="{{data.title}}">
 </div>
 <p></p>
-<textarea class="form-control" rows ="40" data-ng-bind-html="data.content"></textarea>
+
+<textarea class="form-control" rows ="20" data-ng-bind-html="data.content"></textarea>
+
+<p class="pull-right" >
+	<button class="btn btn-default" data-ng-click="edit()">取消</button>
+	<button class="btn btn-success" data-ng-click="edit()">保存</button>
+<p>

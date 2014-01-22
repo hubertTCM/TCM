@@ -12,6 +12,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="/lib/thirdParty/bootstrap-3.0.3-dist/dist/css/bootstrap.css" rel="stylesheet"/>
+    <link href="/templates/site.css" rel="stylesheet"/>
     <!-- Custom styles for this template -->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -64,15 +65,13 @@
 
     <!-- placeholder for template -->
     <div class = "container">    
-    	<div data-ng-view=""></div>
+	 	<div data-ng-view=""></div>
+	 	
+	    <div class="footer">
+	      &copy; Design and developed by Hubert 2014
+	    </div>
     </div>
     
-    <div class="container"> 
-      <footer>
-        <p>&copy; Design and developed by Hubert 2014</p>
-      </footer>
-    </div> <!-- /container -->
-
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/lib/thirdParty/angular-1.2.7/angular.js"></script>
     <script src="/lib/thirdParty/angular-1.2.7/angular-route.js"></script>

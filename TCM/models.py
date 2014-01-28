@@ -103,8 +103,17 @@ class ConsiliaDiseaseConnection(models.Model):
     class Meta:
         unique_together = ['consilia', 'disease']
         
+class ClauseCategory(models.Model):
+    name = models.CharField(max_length=255, primary_key=True)
+        
 class Clause(models.Model): 
+    comeFrom = models.ForeignKey(Book, null = False)
     index = models.IntegerField(null = False)
     content = models.TextField(null = False)
-    comeFrom = models.ForeignKey(Book, null = False)
+    
+class ClauseCategoryReference(models.Model):
+    clause = models.ForeignKey(Clause) 
+    category = models.ForeignKey(ClauseCategory)
+    class Meta:
+        unique_together = ['clause', 'category']
         

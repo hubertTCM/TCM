@@ -29,4 +29,5 @@ urlpatterns = patterns('',
     
     url(r'^allMedicalNotes/', get_all_medical_notes),
     url(r'^medicalNoteDetail/', get_medical_note_detail),
+    url(r'^saveMedicalNote/', save_medical_note),
 )

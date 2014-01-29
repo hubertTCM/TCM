@@ -48,8 +48,26 @@ def get_all_medical_notes(request):
 
 def get_medical_note_detail(request):
     note_id = request.GET['id']
-    print 'medical_note_id = ' + str(note_id)
     detail = MedicalNote.objects.get(id = note_id)
     json_object = detail.json()
     json_object['content'] = HTMLUtility.convert_nl_to_html_format(json_object['content'])
     return generate_json_response( json_object )
+
+def save_medical_note(request):
+    print "Save note"
+    data = simplejson.loads(request.body)
+    note_id = data[u'id']
+    print 'id=' + str(note_id)
+    content = data[u'content']
+    print 'content=' + str(note_id)
+    title = data[u'title']
+    print 'title=' + str(note_id)
+    if note_id <= 0:
+        note = MedicalNote()
+    else:
+        note = MedicalNote.objects.get(id=note_id)
+    
+    note.content = content
+    note.title = title
+    note.save()
+    return HttpResponse("Do something")

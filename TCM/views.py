@@ -54,7 +54,6 @@ def get_medical_note_detail(request):
     return generate_json_response( json_object )
 
 def save_medical_note(request):
-    print "Save note"
     data = simplejson.loads(request.body)
     note_id = data[u'id']
     print 'id=' + str(note_id)
@@ -70,4 +69,3 @@ def save_medical_note(request):
     note.content = content
     note.title = title
     note.save()
-    return HttpResponse("Do something")

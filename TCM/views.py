@@ -69,3 +69,4 @@ def save_medical_note(request):
     note.content = content
     note.title = title
     note.save()
+    return HttpResponse()

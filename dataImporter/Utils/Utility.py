@@ -62,7 +62,7 @@ class Utility(object):
       
     def remove_redundant_space(source):
         content = source.replace('&nbsp', u' ')
-        content = re.sub(' +', ' ', source)
+        content = re.sub(' +', ' ', content)
         content = re.sub('\n +', '\n', content)
         content = re.sub(u'\n+', u'\n', content)
         return content

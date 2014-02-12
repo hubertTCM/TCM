@@ -4,6 +4,8 @@ import os
 import re
 import sys
 
+from PrescriptionParser import *
+
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
     for i in range(levels):
@@ -36,6 +38,8 @@ class GoldenChamberProvider:
         index = int(matches[0])
         clause = {'index':index, 'content' : content, 'category':category}        
         clause.update(self._source)
+        parser = PrescriptionParser(content, self._source) 
+        parser.get_prescriptions()      
         return clause
     
     def get_all_clauses(self):
@@ -71,10 +75,8 @@ class GoldenChamberProvider:
                 item_contents.append(line.strip())             
         return clauses
 
-
-
 if __name__ == "__main__":
     provider = GoldenChamberProvider()
     clauses = provider.get_all_clauses()
-    print clauses
+    #print clauses
     print "done"

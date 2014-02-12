@@ -4,3 +4,6 @@
 经方		Classical Prescriptions
 伤寒论	Treatise on Febrile Diseases
 金匮要略	synopsis of prescriptions of the golden chamber
+剂量		dose
+煎煮		decoction
+本草		herb

@@ -25,6 +25,7 @@ class SingleComponentParser:
         
         if (len(items) == 1): #蜀椒
             medical = items[0]
+            
         if (len(items) == 2): #蜀椒三分（去汗） or 蜀椒（去汗）
             item = items[0]
             medical = item
@@ -34,7 +35,8 @@ class SingleComponentParser:
                 medical = item[0:item.rindex(quantity)]
                 unit = item[item.rindex(quantity) + len(quantity):]
             comments = items[1]
-        if (len(items) == 3): #蜀椒（去汗）三分
+            
+        if (len(items) == 3): #蜀椒（去汗）三分 or 牡蛎（熬）等分
             medical = items[0]
             comments = items[1]
             item = items[2]
@@ -47,19 +49,21 @@ class SingleComponentParser:
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
 class PrescriptionParser:
-    def __init__(self, text, data_source):
-        self._data_source = data_source
-        self._source_text = text        
+    def __init__(self, text, prescription_name_end_tag):
+        self._source_text = text  
+        self._prescription_name_end_tag = prescription_name_end_tag       
         
-    def __parse_name__(self, tiaowen_item):
+    def __parse_name__(self, text):
         '''
         Line ends with 方 (\u65b9)
         '''
         name = None
         # For SHL
-        #matches = re.findall(ur"(\W*)\u65b9$", tiaowen_item)
+        #matches = re.findall(ur"(\W*)\u65b9$", text)
         # For JKYL
-        matches = re.findall(ur"(\W*)\u65b9\uff1a$", tiaowen_item)
+        #matches = re.findall(ur"(\W*)\u65b9\uff1a$", text)
+        pattern = ur"(\W*)" + self._prescription_name_end_tag + ur"$"
+        matches = re.findall(pattern, text)
         if len(matches) > 0:
             name = matches[0]
         return name
@@ -104,8 +108,7 @@ class PrescriptionParser:
             for item in prescription_contents:
                 name = self.__parse_name__(item)
                 if name:   
-                    prescription = {'name': name, 'components' : None, 'content' : ''}
-                    prescription.update(self._data_source)                  
+                    prescription = {'name': name, 'components' : None, 'content' : ''}                  
                     prescriptions.append(prescription)
                     continue
                 components = self.__parse_components__(item)

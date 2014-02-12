@@ -4,6 +4,8 @@ import os
 import re
 import sys
 
+from PrescriptionParser import *
+
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
     for i in range(levels):
@@ -23,6 +25,15 @@ class FebribleDiseaseProvider:
         Utility.update_dict(clause, source)
         return clause
     
+    def __create_caluse(self, index, item_contents):
+        items = [item.strip() for item in item_contents if len(item.strip()) > 0]
+        content = ''
+        if len(items) > 0:
+            content = '\n'.join(items)
+            parser = PrescriptionParser(content, "方") 
+            parser.get_prescriptions() 
+        return {'index':index, 'content':content}
+    
     def get_all_clauses(self):
         clauses = []
         
@@ -34,15 +45,17 @@ class FebribleDiseaseProvider:
             matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
             if len(matches) > 0 and line.strip().index(u'\u3001') < 4:
                 if (len(item_contents) > 0):
-                    clauses.append({'index':index, 'content':'\n'.join(item_contents)})
+                    clauses.append(self.__create_caluse(index, item_contents))
                 index += 1
                 item_contents = []
                 
                 item_contents.append(line.strip())
             else:    
                 item_contents.append(line.strip())
-        clauses.append({'index':index, 'content':'\n'.join(item_contents)})
+                
         shl.close() 
+        clauses.append(self.__create_caluse(index, item_contents))        
+        #clauses.append({'index':index, 'content':'\n'.join(item_contents)})
                   
         map(self.__add_source_info__, clauses)
         return clauses
@@ -50,5 +63,5 @@ class FebribleDiseaseProvider:
 if __name__ == "__main__":
     provider = FebribleDiseaseProvider()
     clauses = provider.get_all_clauses()
-    print clauses
+    #print clauses
     print "done"

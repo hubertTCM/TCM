@@ -108,15 +108,30 @@ class PrescriptionParser:
             print "*** none item for " + text + '\n'
             return None
         components = []
-        
         for item in items:
-            component_parser = SingleComponentParser(item)
-            components.append(component_parser.get_component())
+            item = item.strip()
+            if len(item) > 0:
+                component_parser = SingleComponentParser(item)
+                components.append(component_parser.get_component())
 
         ''' special case:
                         防风　桔梗　桂枝　人参　甘草各一两
         '''
-        #生姜一两半
+        components.reverse()
+        previous_quantity = ''
+        previous_unit = ''
+        for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
+            if component['medical'][-1] == "各":
+                previous_quantity = component['quantity']
+                previous_unit = component['unit']
+            else:
+                if len(component['unit'])== 0 and len(previous_unit) > 0:
+                    component['quantity'] = previous_quantity
+                    component['unit'] = previous_unit
+                if len(component['unit']) > 0:
+                    previous_quantity = ''
+                    previous_unit = '' 
+                    
          
     
         return components

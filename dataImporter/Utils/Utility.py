@@ -1,5 +1,33 @@
+# -*- coding: utf-8 -*-
 import re
 class Utility(object):
+    def convert_number(chinese_number):
+        if chinese_number == "半":
+            return 0.5
+        
+        # If TEN('\u5341') is the first element, replace it with ONE
+        # Remove it otherwise
+        if chinese_number.find(u'\u5341') > -1:
+            if chinese_number.index(u'\u5341') == 0:
+                chinese_number = chinese_number.replace(u'\u5341', u'\u4e00')
+            else:
+                chinese_number = chinese_number.replace(u'\u5341', '')
+    
+        mapper = {}
+        mapper[u'\u4e00'] = '1'
+        mapper[u'\u4e8c'] = '2'
+        mapper[u'\u4e09'] = '3'
+        mapper[u'\u56db'] = '4'
+        mapper[u'\u4e94'] = '5'
+        mapper[u'\u516d'] = '6'
+        mapper[u'\u4e03'] = '7'
+        mapper[u'\u516b'] = '8'
+        mapper[u'\u4e5d'] = '9'
+        mapper[u'\u96f6'] = '0'
+        numbers = chinese_number[:]
+        return float(''.join([mapper[item] for item in numbers]) )
+    convert_number = staticmethod(convert_number)  
+    
     def get_value(key, dictionary, default_value = None):
         if (dictionary is None):
             return default_value

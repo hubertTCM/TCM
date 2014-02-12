@@ -1,17 +1,50 @@
 # -*- coding: utf-8 -*-
+import os
 import re
+import sys
+
+def append_ancestors_to_system_path(levels):
+    parent = os.path.dirname(__file__)
+    for i in range(levels):
+        sys.path.append(parent)
+        parent = os.path.abspath(os.path.join(parent, ".."))
+        
+append_ancestors_to_system_path(3)
+
+from dataImporter.Utils.Utility import *
 
 class SingleComponentParser:
     def __init__(self, text):
-        self._source_text = text
-    
+        self._source_text = text    
+
+    def __parse_quantity(self, item):
+        medical = item
+        quantity = ''
+        unit = ''
+        matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
+        if len(matches) > 0: #format: 蜀椒三分
+            quantity = matches[0]
+            medical = item[0:item.rindex(quantity)]
+            unit = item[item.rindex(quantity) + len(quantity):]
+                        
+            if (len(quantity) > 0):
+                quantity = Utility.convert_number(quantity)
+                
+            if len(unit) > 0 and unit[-1]=="半":#生姜一两半
+                unit = unit[0:len(unit)-1]
+                quantity += 0.5
+            
+            
+        return medical, quantity, unit
+
     def get_component(self):        
         ''' format:
                     蜀椒三分（去汗）
                     蜀椒（去汗）三分
                     蜀椒
                     蜀椒（去汗）
-                    牡蛎（熬）等分           
+                     蜀椒（去汗）等分           
+                    蜀椒三分
         '''
         quantity = ''
         medical = ''
@@ -23,17 +56,15 @@ class SingleComponentParser:
         items = re.split(ur"\uff08(\W+)\uff09", self._source_text.strip())       
         items = [item.strip() for item in items if len(item.strip()) > 0]
         
-        if (len(items) == 1): #蜀椒
+        if (len(items) == 1): #蜀椒  or 蜀椒三分
+            item = items[0]
             medical = items[0]
+            medical, quantity, unit = self.__parse_quantity(item)
             
         if (len(items) == 2): #蜀椒三分（去汗） or 蜀椒（去汗）
             item = items[0]
             medical = item
-            matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
-            if len(matches) > 0: #format: 蜀椒三分
-                quantity = matches[0]
-                medical = item[0:item.rindex(quantity)]
-                unit = item[item.rindex(quantity) + len(quantity):]
+            medical, quantity, unit = self.__parse_quantity(item)
             comments = items[1]
             
         if (len(items) == 3): #蜀椒（去汗）三分 or 牡蛎（熬）等分
@@ -45,7 +76,7 @@ class SingleComponentParser:
                 quantity = matches[0]
                 unit = item[item.rindex(quantity) + len(quantity):]
         
-        print ' medical ' + medical + '\n quantity ' + quantity + '\n unit ' + unit + '\n comments ' + comments + '\n'
+        print ' medical： ' + medical + '  quantity： ' + str(quantity) + '  unit： ' + unit + '  comments： ' + comments + '\n'
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
 class PrescriptionParser:
@@ -85,7 +116,8 @@ class PrescriptionParser:
         ''' special case:
                         防风　桔梗　桂枝　人参　甘草各一两
         '''
-        #TBD
+        #生姜一两半
+         
     
         return components
         
@@ -118,7 +150,7 @@ class PrescriptionParser:
         return prescriptions
     
 if __name__ == "__main__":
-    texts = [ur'蜀椒三分（去汗）', ur'蜀椒（去汗）三分', ur'蜀椒', ur'蜀椒（去汗）', ur'蜀椒（去汗）等分']
+    texts = [ur'蜀椒三分（去汗）', ur'蜀椒（去汗）三分', ur'蜀椒', ur'蜀椒（去汗）', ur'蜀椒（去汗）等分', u'蜀椒三分', u'蜀椒三分半']
     for item in texts:
         p = SingleComponentParser(item)
         p.get_component()

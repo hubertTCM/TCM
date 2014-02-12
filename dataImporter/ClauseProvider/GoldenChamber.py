@@ -38,7 +38,7 @@ class GoldenChamberProvider:
         index = int(matches[0])
         clause = {'index':index, 'content' : content, 'category':category}        
         clause.update(self._source)
-        parser = PrescriptionParser(content) 
+        parser = PrescriptionParser(content, "方：") 
         parser.get_prescriptions()      
         return clause
     

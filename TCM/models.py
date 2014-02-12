@@ -117,3 +117,23 @@ class ClauseCategoryReference(models.Model):
     class Meta:
         unique_together = ['clause', 'category']
         
+class Herb(models.Model):
+    name = models.CharField(max_length=255, primary_key=True)
+    description = models.TextField(null=True)
+
+class HerbUnit(models.Model):
+    name = models.CharField(max_length=255, primary_key=True)
+    description = models.TextField(null=True)
+        
+class Prescription(models.Model): #方剂
+    name = models.CharField(max_length=255, null=False)
+    comeFrom = models.ForeignKey(DataSource, null=True)
+    detail = models.TextField(null=True)
+    
+class PrescriptionComposition(models.Model):
+    prescription = models.ForeignKey(Prescription)
+    herb = models.ForeignKey(Herb)
+    unit = models.ForeignKey(HerbUnit, null=True)
+    quantity = models.FloatField(null=True) 
+    comment = models.TextField(null=True)
+        

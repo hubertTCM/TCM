@@ -30,7 +30,7 @@ class FebribleDiseaseProvider:
         content = ''
         if len(items) > 0:
             content = '\n'.join(items)
-            parser = PrescriptionParser(content, "方") 
+            parser = PrescriptionParser(content, u'方') 
             parser.get_prescriptions() 
         return {'index':index, 'content':content}
     

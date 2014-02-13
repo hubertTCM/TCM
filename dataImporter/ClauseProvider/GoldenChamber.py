@@ -38,7 +38,7 @@ class GoldenChamberProvider:
         index = int(matches[0])
         clause = {'index':index, 'content' : content, 'category':category}        
         clause.update(self._source)
-        parser = PrescriptionParser(content, "方：") 
+        parser = PrescriptionParser(content, u"方：") 
         parser.get_prescriptions()      
         return clause
     
@@ -65,7 +65,7 @@ class GoldenChamberProvider:
                     item_contents = []
                 current_sec = line
                 continue
-            # Parse Tiaowen
+            # Parse clause
             matches = re.findall(ur"\s*\d{1,3}\u3001", line)
             if len(matches) > 0:
                 if len(item_contents) > 0:

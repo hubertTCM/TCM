@@ -15,11 +15,21 @@ from dataImporter.Utils.Utility import *
 
 class SingleComponentParser:
     def __init__(self, text):
-        self._source_text = text
+        self._source_text = text.replace(ur'\u3000',' ')
+        
         self._medical_names_contains_number = [] 
         self._medical_names_contains_number.append(u'半夏') 
         self._medical_names_contains_number.append(u'五味子')   
         self._medical_names_contains_number.append(u'五味')  
+    
+    def __adjust_medical_name__(self, medical_name):
+        text_should_remove = []
+        text_should_remove.append(u'各等分')
+        for item in text_should_remove:
+            if medical_name.endswith(item):
+                return medical_name[:len(medical_name)-len(item)]      
+         
+        return medical_name
         
     def __adjust_quantity_unit__(self, quantity, unit):
         if (len(quantity) > 0):
@@ -52,8 +62,8 @@ class SingleComponentParser:
         
         matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
         if len(matches) > 0: #format: 蜀椒三分
-            quantity = matches[0]
-            medical = item[0:item.rindex(quantity)]
+            quantity = matches[0]            
+            medical = item[0:item.rindex(quantity)]            
             unit = item[item.rindex(quantity) + len(quantity):]                        
             quantity, unit = self.__adjust_quantity_unit__(quantity, unit)          
             
@@ -95,7 +105,9 @@ class SingleComponentParser:
             item = items[2]
             quantity, unit = self.__parse_quantity_unit__(item)
         
-        #print ' [' + self._source_text + ']  medical： ' + medical + '  quantity： ' + str(quantity) + '  unit： ' + unit + '  comments： ' + comments
+        
+        medical = self.__adjust_medical_name__(medical)
+        
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
 class PrescriptionParser:
@@ -103,19 +115,32 @@ class PrescriptionParser:
         self._source_text = text  
         self._prescription_name_end_tag = prescription_name_end_tag       
         
-    def __parse_name__(self, text):
+    def __get_name__(self, text, appendix_content):
         '''
         Line ends with 方 (\u65b9)
         '''
         name = None
-        # For SHL
-        #matches = re.findall(ur"(\W*)\u65b9$", text)
-        # For JKYL
-        #matches = re.findall(ur"(\W*)\u65b9\uff1a$", text)
-        pattern = ur"(\W*)" + self._prescription_name_end_tag + ur"$"
-        matches = re.findall(pattern, text)
-        if len(matches) > 0:
-            name = matches[0]
+        if not appendix_content: #桂枝芍药知母汤方 
+            pattern = ur"(\W*)" + self._prescription_name_end_tag + ur"$"
+            matches = re.findall(pattern, text)
+            if len(matches) > 0:
+                name = matches[0]
+            else:#乌头汤方：治脚气疼痛，不可屈伸。
+                possible_key_words = []
+                possible_key_words.append(u'汤方：')
+                possible_key_words.append(u'丸方：')
+                possible_key_words.append(u'散方：')
+                possible_key_words.append(u'酒方：')
+                for key_word in possible_key_words:
+                    matches = re.findall(ur'(\W+)'+key_word, text)
+                    if len(matches) > 0:
+                        name = matches[0]
+                        break                
+        else: #牡蛎汤：治牡疟。
+            index = text.find(u'：')
+            if index > 0:
+                name = text[:index]
+                        
         return name
     
     def __parse_components__(self, text):
@@ -133,9 +158,7 @@ class PrescriptionParser:
                 component_parser = SingleComponentParser(item)
                 components.append(component_parser.get_component())
 
-        ''' special case:
-                        防风　桔梗　桂枝　人参　甘草各一两
-        '''
+        #防风　桔梗　桂枝　人参　甘草各一两
         components.reverse()
         previous_quantity = ''
         previous_unit = ''
@@ -152,9 +175,10 @@ class PrescriptionParser:
                         component['unit'] = previous_unit
                 else:
                     previous_quantity = ''
-                    previous_unit = '' 
+                    previous_unit = ''             
             
-            
+        components.reverse()
+        for component in components:
             Utility.print_dict(component)                          
         return components
         
@@ -162,34 +186,53 @@ class PrescriptionParser:
         prescriptions = []# name, detail, composition, source    
         
         '''
-        Parse each clause to generate prescription
+        Parse each clause to generate current_prescription
         '''
         matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M)
         if len(matches) > 0:
             prescription_text = matches[0].strip()
             print "prescription_text: " + prescription_text + "**"
             
-            prescription_contents = filter(lambda x: len(x) > 0 , [item.strip() for item in prescription_text.split('\n')])
-            # One clause may include multiple prescriptions
-            for item in prescription_contents:
-                name = self.__parse_name__(item)
+            prescription_contents = filter(lambda x: len(x) > 0, [item.strip() for item in prescription_text.split('\n')])
+            
+            appendix_content = False 
+ 
+            current_prescription = None      
+            for item in prescription_contents:  # One clause may include multiple prescriptions
+                if not item.startswith(u'附子') and len(re.findall(u"^附(\W*)方$", item, re.M)) > 0:
+                    appendix_content = True
+                    continue
+                
+                name = self.__get_name__(item, appendix_content)
                 if name:   
-                    prescription = {'name': name, 'components' : None, 'content' : ''}                  
-                    prescriptions.append(prescription)
+                    if current_prescription and len(current_prescription['components'])>0:                  
+                        prescriptions.append(current_prescription)                        
+                    current_prescription = {'name':name, 'components':[]}
                     continue
                 components = self.__parse_components__(item)
-                if components and len(prescriptions) > 0:
-                    prescriptions[-1]['components'] = components
+                if components:
+                    current_prescription['components'].extend(components)
                     continue
+                if current_prescription:
+                    current_prescription['comment'] = item
+                
         return prescriptions
     
-if __name__ == "__main__":
-    texts = [u'半夏一分', u'五味子', u'蜀椒三分（去汗）', u'蜀椒（去汗）三分', u'蜀椒', u'蜀椒（去汗）', u'蜀椒（去汗）等分', u'蜀椒三分', u'蜀椒三分半']
+if __name__ == "__main__":    
+    texts = [u'栝蒌根各等分', 
+             u'半夏一分', 
+             u'五味子', 
+             u'蜀椒三分（去汗）', 
+             u'蜀椒（去汗）三分', 
+             u'蜀椒', 
+             u'蜀椒（去汗）', 
+             u'蜀椒（去汗）等分', 
+             u'蜀椒三分', 
+             u'蜀椒三分半']
     for item in texts:
         print item + " "
         sp = SingleComponentParser(item)
         component = sp.get_component()
         Utility.print_dict(component)
-        print " "
         
         

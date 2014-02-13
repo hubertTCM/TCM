@@ -2,9 +2,11 @@
 import re
 class Utility(object):  
     def print_dict(dictionary):
+        line = ''
         for key, value in dictionary.items():
-            print str(key) + ":" +str(value)
-        print ""
+            #print str(key) + ":" +str(value)
+            line += '\t' + str(key) + ":" +str(value)
+        print line
     print_dict = staticmethod(print_dict)  
       
     def convert_number(chinese_number): 
@@ -17,7 +19,7 @@ class Utility(object):
         
         for key, value in other_mapper.items():
             if chinese_number.find(key) == 0:
-                chinese_number = u'一' + chinese_number[1:]#chinese_number.replace(key, u'一')
+                chinese_number = u'一' + chinese_number[1:]
             else:
                 if chinese_number[-1] == key:
                     chinese_number = chinese_number[:len(chinese_number)-1]

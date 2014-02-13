@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
-class Utility(object):
+class Utility(object):  
+    def print_dict(dictionary):
+        for key, value in dictionary.items():
+            print str(key) + ":" +str(value)
+        print ""
+    print_dict = staticmethod(print_dict)  
+      
     def convert_number(chinese_number):
         if chinese_number == "半":
             return 0.5

@@ -54,9 +54,7 @@ class FebribleDiseaseProvider:
                 item_contents.append(line.strip())
                 
         shl.close() 
-        clauses.append(self.__create_caluse(index, item_contents))        
-        #clauses.append({'index':index, 'content':'\n'.join(item_contents)})
-                  
+        clauses.append(self.__create_caluse(index, item_contents))                          
         map(self.__add_source_info__, clauses)
         return clauses
 

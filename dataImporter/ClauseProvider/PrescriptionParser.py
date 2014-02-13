@@ -15,25 +15,47 @@ from dataImporter.Utils.Utility import *
 
 class SingleComponentParser:
     def __init__(self, text):
-        self._source_text = text    
+        self._source_text = text
+        self._medical_names_contains_number = [] 
+        self._medical_names_contains_number.append(u'半夏') 
+        self._medical_names_contains_number.append(u'五味子')   
+        self._medical_names_contains_number.append(u'五味')  
+        
+    def __adjust_quantity_unit__(self, quantity, unit):
+        if (len(quantity) > 0):
+            quantity = Utility.convert_number(quantity)
+        if len(unit) > 0 and unit[-1] == "半": #生姜一两半
+            unit = unit[0:len(unit) - 1]
+            quantity += 0.5
+        return quantity, unit
+    
+    def __parse_quantity_unit__(self, item):
+        quantity = ''
+        unit = ''
+        matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
+        if (len(matches) > 0): 
+            quantity = matches[0]
+            unit = item[item.rindex(quantity) + len(quantity):]                                
+            quantity, unit = self.__adjust_quantity_unit__(quantity, unit)                            
+        return quantity, unit
 
-    def __parse_quantity(self, item):
+    def __parse_medical_quantity_unit__(self, item):
         medical = item
         quantity = ''
         unit = ''
+        
+        for name in self._medical_names_contains_number:
+            if item.startswith(name):
+                medical = name
+                quantity, unit = self.__parse_quantity_unit__(item[len(name):])
+                return medical, quantity, unit
+        
         matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
         if len(matches) > 0: #format: 蜀椒三分
             quantity = matches[0]
             medical = item[0:item.rindex(quantity)]
-            unit = item[item.rindex(quantity) + len(quantity):]
-                        
-            if (len(quantity) > 0):
-                quantity = Utility.convert_number(quantity)
-                
-            if len(unit) > 0 and unit[-1]=="半":#生姜一两半
-                unit = unit[0:len(unit)-1]
-                quantity += 0.5
-            
+            unit = item[item.rindex(quantity) + len(quantity):]                        
+            quantity, unit = self.__adjust_quantity_unit__(quantity, unit)          
             
         return medical, quantity, unit
 
@@ -51,7 +73,7 @@ class SingleComponentParser:
         unit = ''
         comments = ''
         
-        print 'get_component ' +  self._source_text
+        #print 'get_component ' +  self._source_text
         
         items = re.split(ur"\uff08(\W+)\uff09", self._source_text.strip())       
         items = [item.strip() for item in items if len(item.strip()) > 0]
@@ -59,24 +81,21 @@ class SingleComponentParser:
         if (len(items) == 1): #蜀椒  or 蜀椒三分
             item = items[0]
             medical = items[0]
-            medical, quantity, unit = self.__parse_quantity(item)
+            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
             
         if (len(items) == 2): #蜀椒三分（去汗） or 蜀椒（去汗）
             item = items[0]
             medical = item
-            medical, quantity, unit = self.__parse_quantity(item)
+            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
             comments = items[1]
             
         if (len(items) == 3): #蜀椒（去汗）三分 or 牡蛎（熬）等分
             medical = items[0]
             comments = items[1]
             item = items[2]
-            matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
-            if (len(matches) > 0): #牡蛎（熬）等分
-                quantity = matches[0]
-                unit = item[item.rindex(quantity) + len(quantity):]
+            quantity, unit = self.__parse_quantity_unit__(item)
         
-        print ' medical： ' + medical + '  quantity： ' + str(quantity) + '  unit： ' + unit + '  comments： ' + comments + '\n'
+        #print ' [' + self._source_text + ']  medical： ' + medical + '  quantity： ' + str(quantity) + '  unit： ' + unit + '  comments： ' + comments
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
 class PrescriptionParser:
@@ -121,19 +140,22 @@ class PrescriptionParser:
         previous_quantity = ''
         previous_unit = ''
         for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
-            if component['medical'][-1] == "各":
+            medical_name = component['medical']
+            if medical_name[-1] == "各":
                 previous_quantity = component['quantity']
                 previous_unit = component['unit']
+                component['medical'] = medical_name[:len(medical_name)-1]
             else:
-                if len(component['unit'])== 0 and len(previous_unit) > 0:
-                    component['quantity'] = previous_quantity
-                    component['unit'] = previous_unit
-                if len(component['unit']) > 0:
+                if len(component['unit'])== 0: 
+                    if (previous_unit) > 0:
+                        component['quantity'] = previous_quantity
+                        component['unit'] = previous_unit
+                else:
                     previous_quantity = ''
                     previous_unit = '' 
-                    
-         
-    
+            
+            
+            Utility.print_dict(component)                          
         return components
         
     def get_prescriptions(self):
@@ -142,9 +164,6 @@ class PrescriptionParser:
         '''
         Parse each clause to generate prescription
         '''
-        # for SHL
-        #matches = re.findall(ur"\s*\n+(\W*\u65b9\s+\W*)", self._source_text, re.M)
-        # for JKYL
         matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M)
         if len(matches) > 0:
             prescription_text = matches[0].strip()
@@ -165,7 +184,12 @@ class PrescriptionParser:
         return prescriptions
     
 if __name__ == "__main__":
-    texts = [ur'蜀椒三分（去汗）', ur'蜀椒（去汗）三分', ur'蜀椒', ur'蜀椒（去汗）', ur'蜀椒（去汗）等分', u'蜀椒三分', u'蜀椒三分半']
+    texts = [u'半夏一分', u'五味子', u'蜀椒三分（去汗）', u'蜀椒（去汗）三分', u'蜀椒', u'蜀椒（去汗）', u'蜀椒（去汗）等分', u'蜀椒三分', u'蜀椒三分半']
     for item in texts:
-        p = SingleComponentParser(item)
-        p.get_component()
+        print item + " "
+        sp = SingleComponentParser(item)
+        component = sp.get_component()
+        Utility.print_dict(component)
+        print " "
+        
+        

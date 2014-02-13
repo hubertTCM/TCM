@@ -7,31 +7,41 @@ class Utility(object):
         print ""
     print_dict = staticmethod(print_dict)  
       
-    def convert_number(chinese_number):
+    def convert_number(chinese_number): 
         if chinese_number == "半":
             return 0.5
         
-        # If TEN('\u5341') is the first element, replace it with ONE
-        # Remove it otherwise
-        if chinese_number.find(u'\u5341') > -1:
-            if chinese_number.index(u'\u5341') == 0:
-                chinese_number = chinese_number.replace(u'\u5341', u'\u4e00')
+        other_mapper = {}
+        other_mapper[u'十'] = 1
+        other_mapper[u'百'] = 2
+        
+        for key, value in other_mapper.items():
+            if chinese_number.find(key) == 0:
+                chinese_number = u'一' + chinese_number[1:]#chinese_number.replace(key, u'一')
             else:
-                chinese_number = chinese_number.replace(u'\u5341', '')
+                if chinese_number[-1] == key:
+                    chinese_number = chinese_number[:len(chinese_number)-1]
+                    for i in range(value):
+                        chinese_number+= u'\u96f6'
+                        
     
-        mapper = {}
-        mapper[u'\u4e00'] = '1'
-        mapper[u'\u4e8c'] = '2'
-        mapper[u'\u4e09'] = '3'
-        mapper[u'\u56db'] = '4'
-        mapper[u'\u4e94'] = '5'
-        mapper[u'\u516d'] = '6'
-        mapper[u'\u4e03'] = '7'
-        mapper[u'\u516b'] = '8'
-        mapper[u'\u4e5d'] = '9'
-        mapper[u'\u96f6'] = '0'
+        number_mapper = {}
+        number_mapper[u'\u4e00'] = '1'
+        number_mapper[u'\u4e8c'] = '2'
+        number_mapper[u'\u4e09'] = '3'
+        number_mapper[u'\u56db'] = '4'
+        number_mapper[u'\u4e94'] = '5'
+        number_mapper[u'\u516d'] = '6'
+        number_mapper[u'\u4e03'] = '7'
+        number_mapper[u'\u516b'] = '8'
+        number_mapper[u'\u4e5d'] = '9'
+        number_mapper[u'\u96f6'] = '0'
+        
+        for key in other_mapper.keys():
+            number_mapper[key] = ''
+        
         numbers = chinese_number[:]
-        return float(''.join([mapper[item] for item in numbers]) )
+        return float(''.join([number_mapper[item] for item in numbers]) )
     convert_number = staticmethod(convert_number)  
     
     def get_value(key, dictionary, default_value = None):
@@ -110,5 +120,12 @@ class Utility(object):
         return Utility.remove_redundant_space(content)
     
     escape = staticmethod(escape)
+    
+if __name__ == "__main__":
+    print Utility.convert_number(u'四十')
+    print Utility.convert_number(u'十一')
+    print Utility.convert_number(u'十')
+    print Utility.convert_number(u'一十')
+    print Utility.convert_number(u'一十一')
             
     

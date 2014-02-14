@@ -4,7 +4,6 @@ class Utility(object):
     def print_dict(dictionary):
         line = ''
         for key, value in dictionary.items():
-            #print str(key) + ":" +str(value)
             line += '\t' + str(key) + ":" +str(value)
         print line
     print_dict = staticmethod(print_dict)  

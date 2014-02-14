@@ -31,8 +31,8 @@ class FebribleDiseaseProvider:
         if len(items) > 0:
             content = '\n'.join(items)
             parser = PrescriptionParser(content, u'方') 
-            parser.get_prescriptions() 
-        return {'index':index, 'content':content}
+            prescriptions = parser.get_prescriptions() 
+        return {'index':index, 'content':content, 'prescriptions':prescriptions}
     
     def get_all_clauses(self):
         clauses = []
@@ -54,12 +54,14 @@ class FebribleDiseaseProvider:
                 item_contents.append(line.strip())
                 
         shl.close() 
+        
         clauses.append(self.__create_caluse(index, item_contents))                          
         map(self.__add_source_info__, clauses)
         return clauses
 
 if __name__ == "__main__":
     provider = FebribleDiseaseProvider()
-    clauses = provider.get_all_clauses()
-    #print clauses
+    clauses = provider.get_all_clauses()    
+    for item in clauses:
+        print_prescription_list(item['prescriptions'])
     print "done"

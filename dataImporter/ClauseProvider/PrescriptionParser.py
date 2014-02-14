@@ -142,7 +142,7 @@ class PrescriptionParser:
                 if len(matches) > 0:
                     name = matches[0] + key_word[0]
                     break    
-                            
+               
         return name
     
     def __parse_components__(self, text):
@@ -151,7 +151,7 @@ class PrescriptionParser:
         '''
         items = [item.strip() for item in text.split(u'\u3000')] #\u3000' is blank space
         if text.find(u'\u3002') >=0 or len(items) <= 0:
-            print "*failed to get components from: " + text + '\n'
+            #print "*failed to get components from: " + text + '\n'
             return None
         components = []
         for item in items:
@@ -180,6 +180,9 @@ class PrescriptionParser:
                     previous_unit = ''             
             
         components.reverse()
+        
+        if (len(components) == 0):
+            print "*failed to get components from: " + text + '\n'
         return components
         
     def get_prescriptions(self):
@@ -212,8 +215,23 @@ class PrescriptionParser:
                 
                 if current_prescription:
                     current_prescription['comment'] = item
-                
+                    
+            if current_prescription and len(current_prescription['components']) > 0:
+                prescriptions.append(current_prescription)    
         return prescriptions
+    
+    
+def print_prescription(prescription): 
+    print "name: " + prescription['name']
+    print "components:"  
+    for component in prescription['components']:
+        Utility.print_dict(component)
+    print "comment: " + prescription['comment']  
+    
+def print_prescription_list(prescriptions):
+    for item in prescriptions:
+        print_prescription(item)
+        print ""
     
 if __name__ == "__main__": 
     parser = PrescriptionParser('', u'方：')

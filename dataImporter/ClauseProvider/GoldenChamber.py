@@ -39,7 +39,7 @@ class GoldenChamberProvider:
         clause = {'index':index, 'content' : content, 'category':category}        
         clause.update(self._source)
         parser = PrescriptionParser(content, u"方：") 
-        parser.get_prescriptions()      
+        clause['prescriptions'] =  parser.get_prescriptions()    
         return clause
     
     def get_all_clauses(self):
@@ -78,5 +78,6 @@ class GoldenChamberProvider:
 if __name__ == "__main__":
     provider = GoldenChamberProvider()
     clauses = provider.get_all_clauses()
-    #print clauses
+    for item in clauses:
+        print_prescription_list(item['prescriptions'])
     print "done"

@@ -125,22 +125,24 @@ class PrescriptionParser:
             matches = re.findall(pattern, text)
             if len(matches) > 0:
                 name = matches[0]
-            else:#乌头汤方：治脚气疼痛，不可屈伸。
-                possible_key_words = []
+        if not name:
+            possible_key_words = []
+            if appendix_content:  #牡蛎汤：治牡疟。              
+                possible_key_words.append(u'汤方：')
+                possible_key_words.append(u'汤：')
+                possible_key_words.append(u'丸：')
+            else:    #乌头汤方：治脚气疼痛，不可屈伸。
                 possible_key_words.append(u'汤方：')
                 possible_key_words.append(u'丸方：')
                 possible_key_words.append(u'散方：')
-                possible_key_words.append(u'酒方：')
-                for key_word in possible_key_words:
-                    matches = re.findall(ur'(\W+)'+key_word, text)
-                    if len(matches) > 0:
-                        name = matches[0]
-                        break                
-        else: #牡蛎汤：治牡疟。
-            index = text.find(u'：')
-            if index > 0:
-                name = text[:index]
-                        
+                possible_key_words.append(u'酒方：')        
+                
+            for key_word in possible_key_words:
+                matches = re.findall(ur'(\W+)'+key_word, text)
+                if len(matches) > 0:
+                    name = matches[0] + key_word[0]
+                    break    
+                            
         return name
     
     def __parse_components__(self, text):
@@ -149,7 +151,7 @@ class PrescriptionParser:
         '''
         items = [item.strip() for item in text.split(u'\u3000')] #\u3000' is blank space
         if text.find(u'\u3002') >=0 or len(items) <= 0:
-            print "*** none item for " + text + '\n'
+            print "*failed to get components from: " + text + '\n'
             return None
         components = []
         for item in items:
@@ -178,20 +180,14 @@ class PrescriptionParser:
                     previous_unit = ''             
             
         components.reverse()
-        for component in components:
-            Utility.print_dict(component)                          
         return components
         
     def get_prescriptions(self):
         prescriptions = []# name, detail, composition, source    
         
-        '''
-        Parse each clause to generate current_prescription
-        '''
         matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M)
         if len(matches) > 0:
             prescription_text = matches[0].strip()
-            print "prescription_text: " + prescription_text + "**"
             
             prescription_contents = filter(lambda x: len(x) > 0, [item.strip() for item in prescription_text.split('\n')])
             
@@ -213,12 +209,15 @@ class PrescriptionParser:
                 if components:
                     current_prescription['components'].extend(components)
                     continue
+                
                 if current_prescription:
                     current_prescription['comment'] = item
                 
         return prescriptions
     
-if __name__ == "__main__":    
+if __name__ == "__main__": 
+    parser = PrescriptionParser('', u'方：')
+    print parser.__get_name__(u'《千金》麻黄醇酒汤：', True)
     texts = [u'栝蒌根各等分', 
              u'半夏一分', 
              u'五味子', 

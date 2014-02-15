@@ -15,12 +15,13 @@ from dataImporter.Utils.Utility import *
 
 class SingleComponentParser:
     def __init__(self, text):
-        self._source_text = text.replace(ur'\u3000',' ')
+        self._source_text = text.replace(ur'\u3000',' ').strip()
         
-        self._medical_names_contains_number = [] 
-        self._medical_names_contains_number.append(u'半夏') 
-        self._medical_names_contains_number.append(u'五味子')   
-        self._medical_names_contains_number.append(u'五味')  
+        self._known_medical = [] 
+        self._known_medical.append(u'半夏') 
+        self._known_medical.append(u'五味子')   
+        self._known_medical.append(u'五味')  
+        self._known_medical.append(u'庶（虫底）虫')
     
     def __adjust_medical_name__(self, medical_name):
         text_should_remove = []
@@ -52,14 +53,7 @@ class SingleComponentParser:
     def __parse_medical_quantity_unit__(self, item):
         medical = item
         quantity = ''
-        unit = ''
-        
-        for name in self._medical_names_contains_number:
-            if item.startswith(name):
-                medical = name
-                quantity, unit = self.__parse_quantity_unit__(item[len(name):])
-                return medical, quantity, unit
-        
+        unit = ''        
         matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
         if len(matches) > 0: #format: 蜀椒三分
             quantity = matches[0]            
@@ -70,41 +64,38 @@ class SingleComponentParser:
         return medical, quantity, unit
 
     def get_component(self):        
-        ''' format:
-                    蜀椒三分（去汗）
-                    蜀椒（去汗）三分
-                    蜀椒
-                    蜀椒（去汗）
-                     蜀椒（去汗）等分           
-                    蜀椒三分
-        '''
         quantity = ''
         medical = ''
         unit = ''
         comments = ''
         
-        #print 'get_component ' +  self._source_text
-        
-        items = re.split(ur"\uff08(\W+)\uff09", self._source_text.strip())       
-        items = [item.strip() for item in items if len(item.strip()) > 0]
-        
+        comment_pattern = ur"\uff08(\W+)\uff09"
+            
+        for name in self._known_medical: #庶（虫底）虫二十枚（熬，去足）
+            if self._source_text.startswith(name):
+                medical = name
+                items =filter(lambda(x):len(x)>0, [item.strip() for item in re.split(comment_pattern, self._source_text[len(name):])])
+                if (len(items)==2):
+                    comments = items[1]
+                if len(items) > 0:    
+                    quantity, unit = self.__parse_quantity_unit__(items[0])                    
+                return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
+                
+        items =filter(lambda(x):len(x)>0, [item.strip() for item in re.split(comment_pattern, self._source_text)])
         if (len(items) == 1): #蜀椒  or 蜀椒三分
             item = items[0]
-            medical = items[0]
             medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
             
         if (len(items) == 2): #蜀椒三分（去汗） or 蜀椒（去汗）
             item = items[0]
-            medical = item
-            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
             comments = items[1]
+            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
             
         if (len(items) == 3): #蜀椒（去汗）三分 or 牡蛎（熬）等分
             medical = items[0]
             comments = items[1]
             item = items[2]
-            quantity, unit = self.__parse_quantity_unit__(item)
-        
+            quantity, unit = self.__parse_quantity_unit__(item)        
         
         medical = self.__adjust_medical_name__(medical)
         
@@ -236,7 +227,10 @@ def print_prescription_list(prescriptions):
 if __name__ == "__main__": 
     parser = PrescriptionParser('', u'方：')
     print parser.__get_name__(u'《千金》麻黄醇酒汤：', True)
-    texts = [u'栝蒌根各等分', 
+    texts = [u'庶（虫底）虫半升',
+             u'庶（虫底）虫二十枚',
+             u'庶（虫底）虫二十枚（熬，去足）',
+             u'栝蒌根各等分', 
              u'半夏一分', 
              u'五味子', 
              u'蜀椒三分（去汗）', 

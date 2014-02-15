@@ -117,23 +117,33 @@ class ClauseCategoryReference(models.Model):
     class Meta:
         unique_together = ['clause', 'category']
         
-class Herb(models.Model):
-    name = models.CharField(max_length=255, primary_key=True)
+        
+PRESCRIPTION_COMPONENT_CATEGORY = (
+    (u'Herb', u'中药'),
+    (u'Prescription', u'方剂')
+                    )
+class AbstractPrescriptionComponent(models.Model):
+    name = models.CharField(max_length=255, null=False)
+    category = models.CharField(max_length=20, choices = PRESCRIPTION_COMPONENT_CATEGORY)
+            
+class Herb(AbstractPrescriptionComponent):
     description = models.TextField(null=True)
 
 class HerbUnit(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
     description = models.TextField(null=True)
         
-class Prescription(models.Model): #方剂
-    name = models.CharField(max_length=255, null=False)
+class Prescription(AbstractPrescriptionComponent): #方剂
     comeFrom = models.ForeignKey(DataSource, null=True)
     detail = models.TextField(null=True)
+    description = models.TextField(null=True)
     
 class PrescriptionComposition(models.Model):
-    prescription = models.ForeignKey(Prescription)
-    herb = models.ForeignKey(Herb)
+    prescription = models.ForeignKey(Prescription, related_name='prescription', null=False)
+    component = models.ForeignKey(AbstractPrescriptionComponent, null=False)
     unit = models.ForeignKey(HerbUnit, null=True)
     quantity = models.FloatField(null=True) 
     comment = models.TextField(null=True)
+    class Meta:
+        unique_together = ['prescription', 'component']
         

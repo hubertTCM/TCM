@@ -46,8 +46,8 @@ class SingleComponentParser:
         return re.findall(quantity_pattern, item)
 
     def __parse_quantity_unit__(self, item):
-        quantity = ''
-        unit = ''
+        quantity = None
+        unit = None
         matches = self.__find_quantity__(item)
         if (len(matches) > 0): 
             quantity = matches[0]
@@ -57,8 +57,8 @@ class SingleComponentParser:
 
     def __parse_medical_quantity_unit__(self, item):
         medical = item
-        quantity = ''
-        unit = ''        
+        quantity = None
+        unit = None        
         matches = self.__find_quantity__(item)
         if len(matches) > 0: #format: 蜀椒三分
             quantity = matches[0]            
@@ -69,9 +69,9 @@ class SingleComponentParser:
         return medical, quantity, unit
 
     def get_component(self):        
-        quantity = ''
+        quantity = None
         medical = ''
-        unit = ''
+        unit = None
         comments = ''
         
         comment_pattern = ur"\uff08(\W+)\uff09"
@@ -137,8 +137,7 @@ class PrescriptionParser:
                 matches = re.findall(ur'(\W+)'+key_word, text)
                 if len(matches) > 0:
                     name = matches[0] + key_word[0]
-                    break    
-               
+                    break               
         return name
     
     def __parse_components__(self, text):

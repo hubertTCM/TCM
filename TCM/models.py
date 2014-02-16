@@ -135,8 +135,7 @@ class HerbUnit(models.Model):
         
 class Prescription(AbstractPrescriptionComponent): #方剂
     comeFrom = models.ForeignKey(DataSource, null=True)
-    detail = models.TextField(null=True)
-    description = models.TextField(null=True)
+    comment = models.TextField(null=True)
     
 class PrescriptionComposition(models.Model):
     prescription = models.ForeignKey(Prescription, related_name='prescription', null=False)

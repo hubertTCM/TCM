@@ -40,10 +40,15 @@ class SingleComponentParser:
             quantity += 0.5
         return quantity, unit
     
+
+    def __find_quantity__(self, item):
+        quantity_pattern = ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}"
+        return re.findall(quantity_pattern, item)
+
     def __parse_quantity_unit__(self, item):
         quantity = ''
         unit = ''
-        matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
+        matches = self.__find_quantity__(item)
         if (len(matches) > 0): 
             quantity = matches[0]
             unit = item[item.rindex(quantity) + len(quantity):]                                
@@ -54,7 +59,7 @@ class SingleComponentParser:
         medical = item
         quantity = ''
         unit = ''        
-        matches = re.findall(ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}", item) #one to ten
+        matches = self.__find_quantity__(item)
         if len(matches) > 0: #format: 蜀椒三分
             quantity = matches[0]            
             medical = item[0:item.rindex(quantity)]            

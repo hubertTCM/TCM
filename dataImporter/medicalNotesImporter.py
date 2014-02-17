@@ -24,8 +24,8 @@ from TCM.models import *
 setup_environ(TCM.settings)
 
 class SingleNoteImporter:
-    def __init__(self, source):
-        self._note_source = source
+    def __init__(self, come_from):
+        self._note_source = come_from        
         self._author_importer = PersonImporter()
         self._source_importer = SourceImporter()
     

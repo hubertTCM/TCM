@@ -166,7 +166,7 @@ class PrescriptionParser:
                 previous_unit = component['unit']
                 component['medical'] = medical_name[:len(medical_name)-1]
             else:
-                if len(component['unit'])== 0: 
+                if not component['unit'] or len(component['unit'])== 0: 
                     if (previous_unit) > 0:
                         component['quantity'] = previous_quantity
                         component['unit'] = previous_unit

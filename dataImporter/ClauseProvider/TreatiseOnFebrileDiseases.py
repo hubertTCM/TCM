@@ -32,7 +32,10 @@ class FebribleDiseaseProvider:
             content = '\n'.join(items)
             parser = PrescriptionParser(content, u'方') 
             prescriptions = parser.get_prescriptions() 
-        return {'index':index, 'content':content, 'prescriptions':prescriptions}
+            
+            
+        comeFrom = {u'category': u'Book', u'name': u'伤寒论'} 
+        return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : comeFrom}
     
     def get_all_clauses(self):
         clauses = []

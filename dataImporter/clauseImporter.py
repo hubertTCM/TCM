@@ -27,14 +27,14 @@ setup_environ(TCM.settings)
 
 class SingleClauseImporter:
     def __init__(self, clause_data):
-        self._clause_data_dict = clause_data
+        self._prescription_data = clause_data
         self._author_importer = PersonImporter()
         self._source_importer = SourceImporter()
         
     def __import_category__(self, clause):
-        if not ('category' in self._clause_data_dict):
+        if not ('category' in self._prescription_data):
             return
-        category, is_created = ClauseCategory.objects.get_or_create(name = self._clause_data_dict['category'])
+        category, is_created = ClauseCategory.objects.get_or_create(name = self._prescription_data['category'])
         if is_created:
             category.save()
         
@@ -44,18 +44,18 @@ class SingleClauseImporter:
             
     def __get_data_source__(self):
         come_from = None
-        if 'comeFrom' in self._clause_data_dict:
-            return self._clause_data_dict['comeFrom']
+        if 'comeFrom' in self._prescription_data:
+            return self._prescription_data['comeFrom']
         return come_from
     
     def do_import(self):
         clause = Clause()      
-        clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._clause_data_dict, self._source_importer.import_source)
-        clause.content = self._clause_data_dict[u'content']
-        clause.index = self._clause_data_dict[u'index']
+        clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
+        clause.content = self._prescription_data[u'content']
+        clause.index = self._prescription_data[u'index']
         clause.save()
         
-        prescriptions_importer = PrescriptionsImporter(self._clause_data_dict['prescriptions'], self.__get_data_source__())
+        prescriptions_importer = PrescriptionsImporter(self._prescription_data['prescriptions'])
         prescriptions_importer.do_import()
         
         self.__import_category__(clause)
@@ -71,11 +71,11 @@ class Importer:
         for source_provider in self._providers:
             for clause in source_provider.get_all_clauses():
                 try:
-                    print "running"
+                    #print "importing " + clause[u'content']
                     importer = SingleClauseImporter(clause)
                     importer.do_import()                
                 except Exception,ex:
-                    print Exception,":",ex
+                    print Exception,":",ex," *",clause[u'content']
     
 
 if __name__ == "__main__":

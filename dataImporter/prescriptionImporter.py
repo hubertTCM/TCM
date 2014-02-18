@@ -40,15 +40,15 @@ class PrescriptionHelper:
     
 
 class SinglePrescriptionImporter:
-    def __init__(self, prescription, clause_data):
+    def __init__(self, prescription):
         self._prescription = prescription
-        self._clause_data_dict = clause_data
         self._source_importer = SourceImporter()
         
-    def __get_uni__t(self, name):   
+    def __get_unit__(self, name):   
         unit, is_created = HerbUnit.objects.get_or_create(name = name) 
         if is_created:
             unit.save()
+        return unit
         
     def __get_component__(self, name):
         if not PrescriptionHelper.is_prescription_name(name):
@@ -57,37 +57,38 @@ class SinglePrescriptionImporter:
                 herb.category = 'Herb'
                 herb.save()
                 return herb
+            return herb
         
         return Prescription.objects.get(name = name)       
            
         
     def __import_composition__(self, db_prescription, component):
         db_composition = PrescriptionComposition()
+        db_composition.prescription = db_prescription
         db_composition.component = self.__get_component__(component['medical'])
         db_composition.quantity = component['quantity']
-        db_composition.unit = self.__get_uni__t(component['unit'])
+        db_composition.unit = self.__get_unit__(component['unit'])
         db_composition.comment = component['comments']
         db_composition.save()
     
     def do_import(self):
         db_prescription = Prescription()    
         db_prescription.category = 'Prescription'  
-        db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._clause_data_dict, self._source_importer.import_source)
+        db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
         db_prescription.name = self._prescription['name']
-        db_prescription.description = self._prescription['comment']        
+        db_prescription.comment = self._prescription['comment']        
         db_prescription.save()
         
         for component in self._prescription['components']:
             self.__import_composition__(db_prescription, component)
     
 class PrescriptionsImporter:
-    def __init__(self, prescriptions, clause_data):
+    def __init__(self, prescriptions):
         self._prescriptions = prescriptions
-        self._clause_data_dict = clause_data
     
     def do_import(self):
         for prescription in self._prescriptions:
-            importer = SinglePrescriptionImporter(prescription, self._clause_data_dict)
+            importer = SinglePrescriptionImporter(prescription)
             importer.do_import()
             
 if __name__ == "__main__":

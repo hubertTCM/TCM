@@ -18,23 +18,19 @@ from dataImporter.Utils.Utility import *
 
 class FebribleDiseaseProvider:
     def __init__(self):
-        self._source_file_fullpath = os.path.dirname(__file__) + '\\shl.txt'
-        
-    def __add_source_info__(self, clause):
-        source = {u'comeFrom': {u'category': u'Book', u'name': u'伤寒论'}, u'author': u'张仲景'} 
-        Utility.update_dict(clause, source)
-        return clause
+        self._source_file_fullpath = os.path.dirname(__file__) + '\\shl.txt'    
     
     def __create_caluse(self, index, item_contents):
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
+        comeFrom = {u'category': u'Book', u'name': u'伤寒论'} 
         content = ''
         if len(items) > 0:
             content = '\n'.join(items)
             parser = PrescriptionParser(content, u'方') 
             prescriptions = parser.get_prescriptions() 
+            for prescription in prescriptions:
+                prescription.update({'comeFrom' : comeFrom})           
             
-            
-        comeFrom = {u'category': u'Book', u'name': u'伤寒论'} 
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : comeFrom}
     
     def get_all_clauses(self):

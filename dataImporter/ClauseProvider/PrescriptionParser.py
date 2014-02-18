@@ -26,6 +26,7 @@ class SingleComponentParser:
     def __adjust_medical_name__(self, medical_name):
         text_should_remove = []
         text_should_remove.append(u'各等分')
+        text_should_remove.append(u'等分')
         for item in text_should_remove:
             if medical_name.endswith(item):
                 return medical_name[:len(medical_name)-len(item)]      
@@ -33,14 +34,20 @@ class SingleComponentParser:
         return medical_name
         
     def __adjust_quantity_unit__(self, quantity, unit):
-        if (len(quantity) > 0):
+        if len(quantity) > 0:
             quantity = Utility.convert_number(quantity)
+        else:
+            quantity = None
+            
         if len(unit) > 0 and unit[-1] == "半": #生姜一两半
             unit = unit[0:len(unit) - 1]
             quantity += 0.5
+            
+        if len(unit) == 0:
+            unit = None
+                
         return quantity, unit
     
-
     def __find_quantity__(self, item):
         quantity_pattern = ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}"
         return re.findall(quantity_pattern, item)
@@ -68,9 +75,9 @@ class SingleComponentParser:
             
         return medical, quantity, unit
 
-    def get_component(self):        
+    def get_component(self): 
+        medical = ''       
         quantity = None
-        medical = ''
         unit = None
         comments = ''
         
@@ -144,10 +151,15 @@ class PrescriptionParser:
         '''
         Should not include Chinese period (\u3002)
         '''
-        items = [item.strip() for item in text.split(u'\u3000')] #\u3000' is blank space
-        if text.find(u'\u3002') >=0 or len(items) <= 0:
-            #print "*failed to get components from: " + text + '\n'
+        if text.find(u'\u3002') >=0:
             return None
+        
+        items = []
+        for item in [item.strip() for item in text.split(u'\u3000')]: #\u3000' is blank space:
+            items.extend(filter(lambda(x): len(x) > 0, [temp_item.strip() for temp_item in item.split(' ')]))           
+        if len(items) <= 0:
+            return None
+        
         components = []
         for item in items:
             item = item.strip()
@@ -231,7 +243,8 @@ def print_prescription_list(prescriptions):
 if __name__ == "__main__": 
     parser = PrescriptionParser('', u'方：')
     print parser.__get_name__(u'《千金》麻黄醇酒汤：', True)
-    texts = [u'庶（虫底）虫半升',
+    texts = [u'甘草（炙）各十八铢',
+             u'庶（虫底）虫半升',
              u'庶（虫底）虫二十枚',
              u'庶（虫底）虫二十枚（熬，去足）',
              u'栝蒌根各等分', 

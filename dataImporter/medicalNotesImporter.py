@@ -24,27 +24,27 @@ from TCM.models import *
 setup_environ(TCM.settings)
 
 class SingleNoteImporter:
-    def __init__(self, come_from):
-        self._note_source = come_from        
+    def __init__(self, note_data):
+        self._note_data = note_data        
         self._author_importer = PersonImporter()
         self._source_importer = SourceImporter()
     
     def __is_valid__(self):
-        if (Utility.get_value('title', self._note_source) == None):
+        if (Utility.get_value('title', self._note_data) == None):
             return False
         return True
         
     def import_note(self):  
         if (not self.__is_valid__()):
-            print "*invalid item" + str(self._note_source)
+            print "*invalid item" + str(self._note_data)
             return
         
         note = MedicalNote()      
-        note.author = Utility.run_action_when_key_exists(u'author', self._note_source, self._author_importer.import_person)
-        note.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._note_source, self._source_importer.import_source)
-        note.content = self._note_source[u'content']
-        note.title = self._note_source[u'title']
-        note.creationTime = Utility.get_value('creationTime', self._note_source)
+        note.author = Utility.run_action_when_key_exists(u'author', self._note_data, self._author_importer.import_person)
+        note.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._note_data, self._source_importer.import_source)
+        note.content = self._note_data[u'content']
+        note.title = self._note_data[u'title']
+        note.creationTime = Utility.get_value('creationTime', self._note_data)
         note.save()
         
 

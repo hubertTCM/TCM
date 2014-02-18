@@ -20,7 +20,7 @@ from dataImporter.Utils.Utility import *
 class GoldenChamberProvider:
     def __init__(self):
         self._source_file_fullpath = os.path.dirname(__file__) + '\\jkyl.txt'
-        self._clause_data_dict = {u'comeFrom': {u'category': u'Book', u'name': u'金匮要略'}, u'author': u'张仲景'} 
+        self._come_from = {u'comeFrom': {u'category': u'Book', u'name': u'金匮要略'}, u'author': u'张仲景'} 
             
     def __is_start_section__(self, line):
         #second section: u'\u7b2c\u4e8c'
@@ -37,9 +37,15 @@ class GoldenChamberProvider:
         matches = re.findall(ur"\s*(\d{1,3})\u3001", content)
         index = int(matches[0])
         clause = {'index':index, 'content' : content, 'category':category}        
-        clause.update(self._clause_data_dict)
+        clause.update(self._come_from)
+        
         parser = PrescriptionParser(content, u"方：") 
-        clause['prescriptions'] =  parser.get_prescriptions()    
+        prescriptions =  parser.get_prescriptions()         
+        for prescription in prescriptions:
+            prescription.update(self._come_from)
+            
+        clause['prescriptions'] = prescriptions 
+        
         return clause
     
     def get_all_clauses(self):

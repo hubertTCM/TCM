@@ -18,6 +18,7 @@ class SingleComponentParser:
         self._source_text = text.replace(ur'\u3000',' ').strip()
         
         self._known_medical = [] 
+        self._known_medical.append(u'百合')
         self._known_medical.append(u'半夏') 
         self._known_medical.append(u'五味子')   
         self._known_medical.append(u'五味')  
@@ -49,7 +50,7 @@ class SingleComponentParser:
         return quantity, unit
     
     def __find_quantity__(self, item):
-        quantity_pattern = ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a]{1,3}"
+        quantity_pattern = ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a\百]{1,3}"
         return re.findall(quantity_pattern, item)
 
     def __parse_quantity_unit__(self, item):

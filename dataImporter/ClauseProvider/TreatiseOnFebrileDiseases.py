@@ -62,4 +62,8 @@ if __name__ == "__main__":
     clauses = provider.get_all_clauses()    
     for item in clauses:
         print_prescription_list(item['prescriptions'])
+        
+#         for prescription in item['prescriptions']:
+#             for component in prescription['components']:
+#                 print component['unit']
     print "done"

@@ -75,7 +75,7 @@ class Importer:
                     importer = SingleClauseImporter(clause)
                     importer.do_import()                
                 except Exception,ex:
-                    print Exception,":",ex," *",clause[u'content']
+                    print Exception,":",ex
     
 
 if __name__ == "__main__":

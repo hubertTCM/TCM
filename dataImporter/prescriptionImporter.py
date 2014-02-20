@@ -23,6 +23,15 @@ setup_environ(TCM.settings)
 
 class PrescriptionHelper:
     def is_prescription_name(name):
+        known_medical_names = []
+        known_medical_names.append(u'石膏')
+        known_medical_names.append(u'铅丹')
+        known_medical_names.append(u'牡丹')
+        
+        for medical in known_medical_names:
+            if name.startswith(medical):
+                return False
+        
         prescription_end_tags = []
         prescription_end_tags.append(u'汤')
         prescription_end_tags.append(u'丸')
@@ -45,6 +54,9 @@ class SinglePrescriptionImporter:
         self._source_importer = SourceImporter()
         
     def __get_unit__(self, name):   
+        if not name:
+            return None
+        
         unit, is_created = HerbUnit.objects.get_or_create(name = name) 
         if is_created:
             unit.save()
@@ -63,24 +75,31 @@ class SinglePrescriptionImporter:
            
         
     def __import_composition__(self, db_prescription, component):
-        db_composition = PrescriptionComposition()
-        db_composition.prescription = db_prescription
-        db_composition.component = self.__get_component__(component['medical'])
-        db_composition.quantity = component['quantity']
-        db_composition.unit = self.__get_unit__(component['unit'])
-        db_composition.comment = component['comments']
-        db_composition.save()
+        try:
+            db_composition = PrescriptionComposition()
+            db_composition.prescription = db_prescription
+            db_composition.component = self.__get_component__(component['medical'])
+            db_composition.quantity = component['quantity']
+            db_composition.unit = self.__get_unit__(component['unit'])
+            db_composition.comment = component['comments']
+            db_composition.save()
+                    
+        except Exception,ex:
+            print Exception,":",ex, "prescription: ",db_prescription.name, " medical: ",component['medical'], " quantity", component['quantity'], " unit", component['unit']
     
     def do_import(self):
-        db_prescription = Prescription()    
-        db_prescription.category = 'Prescription'  
-        db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
-        db_prescription.name = self._prescription['name']
-        db_prescription.comment = self._prescription['comment']        
-        db_prescription.save()
-        
-        for component in self._prescription['components']:
-            self.__import_composition__(db_prescription, component)
+        try:
+            db_prescription = Prescription()    
+            db_prescription.category = 'Prescription'  
+            db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
+            db_prescription.name = self._prescription['name']
+            db_prescription.comment = self._prescription['comment']        
+            db_prescription.save()
+            
+            for component in self._prescription['components']:
+                self.__import_composition__(db_prescription, component)            
+        except Exception,ex:
+                print Exception,":",ex
     
 class PrescriptionsImporter:
     def __init__(self, prescriptions):
@@ -92,4 +111,5 @@ class PrescriptionsImporter:
             importer.do_import()
             
 if __name__ == "__main__":
+    PrescriptionHelper.is_prescription_name(u'石膏')
     print "no data to import"

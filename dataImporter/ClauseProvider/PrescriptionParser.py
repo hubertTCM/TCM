@@ -33,9 +33,10 @@ class SingleComponentParser:
         text_should_remove.append(u'等分')
         for item in text_should_remove:
             if medical_name.endswith(item):
-                return medical_name[:len(medical_name)-len(item)].strip()      
-         
-        return medical_name.strip()
+                medical_name = medical_name[:len(medical_name)-len(item)]
+                break     
+        quantity_pattern = u"[一二三四五六七八九十]"     
+        return re.split(quantity_pattern, medical_name)[0]
     
     def __split_with_comment_tag__(self, text):
         return filter(lambda(x):len(x)>0, [item.strip() for item in re.split(self._comment_pattern, text)])
@@ -155,6 +156,8 @@ class PrescriptionParser:
                 possible_key_words.append(u'汤方：')
                 possible_key_words.append(u'汤：')
                 possible_key_words.append(u'丸：')
+                possible_key_words.append(u'散：')
+                possible_key_words.append(u'饮：')
             else:    #乌头汤方：治脚气疼痛，不可屈伸。
                 possible_key_words.append(u'汤方：')
                 possible_key_words.append(u'丸方：')
@@ -234,7 +237,7 @@ class PrescriptionParser:
                 if name:   
                     if current_prescription and len(current_prescription['components'])>0:                  
                         prescriptions.append(current_prescription)                        
-                    current_prescription = {'name':name, 'components':[]}
+                    current_prescription = {'name':name, 'components':[]}               
                     continue
                 components = self.__parse_components__(item)
                 if components:

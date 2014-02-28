@@ -75,7 +75,7 @@ class SummaryProvider:
         self._root = html_root 
         self._config = {
                     'xpath':'//tr[@class="tr3"]',
-                    'extract_attributes':[{'xpath':'./td[2]/a', 'target_attri_name':'title'},
+                    'extract_attributes':[{'xpath':'./td[2]/a', 'target_attri_name':'title', 'include_text_from_descendant':True},
                                           {'xpath':'./td[2]/a', 'source_attri' : 'href', 'target_attri_name':'source_sub_link'},
                                           {'xpath':'./td[3]/p', 'target_attri_name':'creationTime'},
                                           {'xpath':'./td[3]/a', 'source_attri' : 'href', 'target_attri_name':'author_uid_link'},
@@ -94,11 +94,12 @@ class SummaryProvider:
             return
         summarys = Utility.remove_none_from(summarys)
         for summary_item in summarys:
-            summary_item['creationTime'] = self.__convert_time__(summary_item['creationTime'])
+            summary_item['creationTime'] = Utility.run_action_when_key_exists('creationTime', summary_item, self.__convert_time__)#self.__convert_time__(summary_item['creationTime'])
         return summarys
     
 class DetailProvider:
     def __init__(self, summary):
+        self._url = None
         self._summary = summary
         self.__init_detail_url__()
         
@@ -108,7 +109,8 @@ class DetailProvider:
         self._detail[u'author'] = Utility.get_value('author', self._summary)
         self._detail[u'title'] = Utility.get_value('title', self._summary)
         self._detail[u'creationTime'] = Utility.get_value('creationTime', self._summary)
-        self._detail[u'comeFrom'] = {u'category': u'web', u'url': self._url}
+        if self._url:
+            self._detail[u'comeFrom'] = {u'category': u'web', u'url': self._url}
         
         
     def __init_detail_url__(self):

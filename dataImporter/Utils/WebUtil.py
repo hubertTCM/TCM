@@ -43,7 +43,7 @@ class web_extractor(object):
     def get_text(element, include_text_from_descendant):
         if (not include_text_from_descendant):
             return element.text
-        return '\n'.join([web_extractor.get_full_text(descendant) for descendant in element.iter()])
+        return etree.tostring(element)
     
     get_text = staticmethod(get_text)            
 

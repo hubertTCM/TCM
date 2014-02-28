@@ -14,8 +14,8 @@ def append_ancestors_to_system_path(levels):
 
 append_ancestors_to_system_path(3)
 
+from dataImporter.Utils.WebUtil import *
 
-from dataImporter.Utils.Utility import *
 
 class DownloadItemProvider:
     def __init__(self, url):
@@ -24,23 +24,29 @@ class DownloadItemProvider:
     def get_items(self): #url, category, title, local_folder
         return []
 
-class ItemDownloader:
-    def __init__(self, provider):
-        self._source = provider
+class ItemDownloader:  
+    def download_single_file(self, url, local_path):
+        parent = os.path.dirname(local_path)
+        if not os.path.exists(parent):
+            os.makedirs(parent)       
+        
+        content = web_extractor.get_content_from(url)
+        to_file = codecs.open(local_path, 'w', 'utf-8', 'ignore')
+        to_file.write(content)
+        to_file.close()
     
-    def download(self):
+    def download(self, provider):
         for item in provider.get_items():
-            pass
+            self.download_single_file(item['url'], item['local_path'])
 
 if __name__ == "__main__":
-    source_url = 'http://www.tcm100.com/user/lzznya/zzbook1.htm'
-    #content = web_extractor.get_content_from(source_url)
-    item = urlopen(source_url)
-    content = item.read()
-    item.close()
-    
-    to_file = codecs.open('test.html', 'w', 'utf-8', 'ignore')
-    to_file.write(content)
+    parent = os.path.dirname(__file__)
+    print os.path.abspath(os.path.join(parent, "..\hello"))
+    file_name = os.path.abspath(os.path.join(parent, u"..\ConsiliaProvider\外台秘要\index.html"))
+    downloader = ItemDownloader()
+    source_url = 'http://www.tcm100.com/user/wtmy/index.htm' #
+    downloader.download_single_file(source_url, file_name)
+    print "done"
     
 
 

@@ -22,8 +22,6 @@ from dataImporter.Utils.Utility import *
 class MedicalNoteProvider:
     def __init__(self):
         self._file_names =[]
-#         self._file_names.append({'file_name':'jsya.txt', 'split_pattern':ur"(\u3001.+)"})
-#         self._file_names.append({'file_name':'zyhyl.txt', 'split_pattern':ur"(\uff0e.+)"})
         self._file_names.append(('jsya.txt',ur"\u3001"))
         self._file_names.append(('zyhyl.txt',ur"\uff0e"))
         

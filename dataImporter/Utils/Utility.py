@@ -6,6 +6,7 @@ class Utility(object):
         for key, value in dictionary.items():
             line += '\t' + str(key) + ":" +str(value)
         print line
+        return line
     print_dict = staticmethod(print_dict)  
       
     def convert_number(chinese_number): 

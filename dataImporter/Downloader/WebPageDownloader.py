@@ -43,36 +43,51 @@ class DownloadItemProvider:
         return []
 
 class ItemDownloader:  
-    def download_single_file(self, url, local_path):
-        parent = os.path.dirname(local_path)
-        if not os.path.exists(parent):
-            os.makedirs(parent)       
+    def __init__(self, folder_name):
+        self._folder_name = folder_name        
         
+    def download_single_file(self, url, file_name):
+        if not os.path.exists(self._folder_name):
+            os.makedirs(self._folder_name)       
+        
+        file_path = os.path.join(self._folder_name, file_name)      
         content = web_extractor.get_content_from(url)
-        to_file = codecs.open(local_path, 'w', 'utf-8', 'ignore')
+        to_file = codecs.open(file_path, 'w', 'utf-8', 'ignore')
         to_file.write(content)
         to_file.close()
     
-    def download(self, provider):
-        for item in provider.get_items():
-            self.download_single_file(item['url'], item['local_path'])
+    def download_files_in_index_file(self):
+        index_file_name = os.path.join(self._folder_name, "index_source.txt")
+        index_file = codecs.open(index_file_name, 'r', 'utf-8', 'ignore')
+        
+        for line in index_file:
+            try:
+                value = Utility.get_dict_from(line.strip())
+                self.download_single_file(value['url'].strip(), value['name'].strip()+".html")            
+            except Exception,ex:
+                print "***" + line
+                print Exception,":",ex
 
+        index_file.close()
+        
 if __name__ == "__main__":
     parent = os.path.dirname(__file__)
     consiliar_folder = os.path.abspath(os.path.join(parent, u"..\ConsiliaProvider"))
     file_name = os.path.join(consiliar_folder, u"外台秘要\index.html")
-    downloader = ItemDownloader()
-    source_url = 'http://www.tcm100.com/user/wtmy/index.htm' #
-    #downloader.download_single_file(source_url, file_name)
-    #root.xpath('//table[@cellpadding=2]//a')
-    config = {
-                    'xpath':'//table[@cellpadding=2]//a',
-                    'extract_attributes':[{'source_attri' : 'href', 'target_attri_name':'url'},
-                                          {'target_attri_name':'name'}
-                                        ]
-                }   
-    provider = DownloadItemProvider(file_name, config)
-    provider.get_items()
+    source_url = 'http://www.tcm100.com/user/wtmy/index.htm' 
+
+#     config = {
+#                     'xpath':'//table[@cellpadding=2]//a',
+#                     'extract_attributes':[{'source_attri' : 'href', 'target_attri_name':'url'},
+#                                           {'target_attri_name':'name'}
+#                                         ]
+#                 }   
+#     provider = DownloadItemProvider(file_name, config)
+#     provider.get_items()
+    
+    
+    downloader = ItemDownloader(os.path.join(consiliar_folder, u"外台秘要"))
+    downloader.download_files_in_index_file()
     print "done"
     
 

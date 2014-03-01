@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 import re
-class Utility(object):  
+class Utility(object): 
+    def get_dict_from(line): 
+        dict = {}
+        items = filter(lambda(x): len(x) > 0, line.split('\t'))
+        for item in items:
+            key_pairs = filter(lambda(x): len(x) > 0, item.split(':', 1))
+            if len(key_pairs)== 0:
+                continue
+            key = key_pairs[0]
+            value = None
+            if len(key_pairs)== 2:
+                value = key_pairs[1]
+            dict[key] = value
+        return dict
+    get_dict_from = staticmethod(get_dict_from)
+    
     def print_dict(dictionary):
         line = ''
         for key, value in dictionary.items():

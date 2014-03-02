@@ -32,7 +32,7 @@ class SingleConsiliaImporter:
         defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
         Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
         
-        self._s_data_source None
+        self._s_data_source = None
         
     def __run_action_when_key_exists__(self, key, action):
         return Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
@@ -84,7 +84,7 @@ class SingleConsiliaImporter:
                        
     def upload_to_database(self):            
         self.__run_action_when_key_exists__(u'author', self.__create_author__)
-        self._s_data_source self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
+        self._s_data_source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
         
         self.__create_consilia__()
         

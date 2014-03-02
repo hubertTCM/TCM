@@ -17,8 +17,8 @@ append_ancestors_to_system_path(3)
 from dataImporter.Utils.WebUtil import *
 
 class DownloadItemProvider:
-    def __init__(self, source, config):
-        self._source = source
+    def __init__(self, source_folder, config):
+        self._source = os.path.abspath(os.path.join(source_folder, 'index.html'))#source
         self._config = config
         
     def __get_content__(self):
@@ -44,7 +44,7 @@ class DownloadItemProvider:
 
 class ItemDownloader:  
     def __init__(self, folder_name):
-        self._folder_name = folder_name        
+        self._folder_name = folder_name  
         
     def download_single_file(self, url, file_name):
         if not os.path.exists(self._folder_name):
@@ -73,21 +73,39 @@ class ItemDownloader:
 if __name__ == "__main__":
     parent = os.path.dirname(__file__)
     consiliar_folder = os.path.abspath(os.path.join(parent, u"..\ConsiliaProvider"))
-    file_name = os.path.join(consiliar_folder, u"外台秘要\index.html")
-    source_url = 'http://www.tcm100.com/user/wtmy/index.htm' 
+    yz_config = {
+                    'xpath':'//table[@cellpadding=2]//a',
+                    'extract_attributes':[{'source_attri' : 'href', 'target_attri_name':'url'},
+                                          {'target_attri_name':'name'}
+                                        ]
+                } 
+    fjx_config = {
+                    'xpath':'//table[@cellpadding=0]//a',
+                    'extract_attributes':[{'source_attri' : 'href', 'target_attri_name':'url'},
+                                          {'target_attri_name':'name'}
+                                        ]
+                }   
 
-#     config = {
-#                     'xpath':'//table[@cellpadding=2]//a',
-#                     'extract_attributes':[{'source_attri' : 'href', 'target_attri_name':'url'},
-#                                           {'target_attri_name':'name'}
-#                                         ]
-#                 }   
-#     provider = DownloadItemProvider(file_name, config)
-#     provider.get_items()
     
     
-    downloader = ItemDownloader(os.path.join(consiliar_folder, u"外台秘要"))
-    downloader.download_files_in_index_file()
+#     downloader = ItemDownloader(os.path.join(consiliar_folder, u"外台秘要"))
+#     downloader.download_files_in_index_file()
+
+    herb_folder = os.path.abspath(os.path.join(parent, u"..\HerbProvider"))
+    prescription_folder = os.path.abspath(os.path.join(parent, u"..\PrescriptionProvider"))
+
+    index_urls = []
+    index_urls.append(('http://www.tcm100.com/user/yzheng/index.htm', os.path.join(herb_folder, "yz"), yz_config )) #药征
+    #index_urls.append(('http://www.tcm100.com/user/JiaoCai/FangJiXue/FangJiXueMuLu.aspx', os.path.join(prescription_folder, "fjx"), fjx_config ))
+    
+    for url, folder, config in index_urls:
+        downloader = ItemDownloader(folder)
+        downloader.download_single_file(url, 'index.html')
+             
+        provider = DownloadItemProvider(folder, config)
+        provider.get_items()
+        
+        downloader.download_files_in_index_file()   
     print "done"
     
 

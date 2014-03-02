@@ -27,7 +27,7 @@ class web_extractor(object):
                 item.close()
                 return Utility.escape(content)
             except Exception,ex:
-                print "exception from get_detail_url#", Exception,":",ex
+                print "exception from get_content_from#", Exception,":",ex
                 tried_time += 1
                 waited_time = waited_time * 2
                 time.sleep( waited_time )

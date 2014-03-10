@@ -20,7 +20,7 @@ class FebribleDiseaseProvider:
     def __init__(self):
         self._source_file_fullpath = os.path.dirname(__file__) + '\\shl.txt'    
     
-    def __create_caluse(self, index, item_contents):
+    def __create_caluse__(self, index, item_contents):
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
         comeFrom = {u'category': u'Book', u'name': u'伤寒论'} 
         content = ''
@@ -44,7 +44,7 @@ class FebribleDiseaseProvider:
             matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
             if len(matches) > 0 and line.strip().index(u'\u3001') < 4:
                 if (len(item_contents) > 0):
-                    clauses.append(self.__create_caluse(index, item_contents))
+                    clauses.append(self.__create_caluse__(index, item_contents))
                 index += 1
                 item_contents = []
                 

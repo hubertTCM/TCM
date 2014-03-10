@@ -219,7 +219,7 @@ class PrescriptionParser:
     def get_prescriptions(self):
         prescriptions = []# name, detail, composition, source    
         
-        matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M)
+        matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M) #u65b9:方
         if len(matches) > 0:
             prescription_text = matches[0].strip()
             

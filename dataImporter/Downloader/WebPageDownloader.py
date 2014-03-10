@@ -86,26 +86,22 @@ if __name__ == "__main__":
                                         ]
                 }   
 
-    
-    
-#     downloader = ItemDownloader(os.path.join(consiliar_folder, u"外台秘要"))
-#     downloader.download_files_in_index_file()
-
     herb_folder = os.path.abspath(os.path.join(parent, u"..\HerbProvider"))
+    clause_folder = os.path.abspath(os.path.join(parent, u"..\ClauseProvider"))
     prescription_folder = os.path.abspath(os.path.join(parent, u"..\PrescriptionProvider"))
 
     index_urls = []
-    index_urls.append(('http://www.tcm100.com/user/yzheng/index.htm', os.path.join(herb_folder, "yz"), yz_config )) #药征
-    #index_urls.append(('http://www.tcm100.com/user/JiaoCai/FangJiXue/FangJiXueMuLu.aspx', os.path.join(prescription_folder, "fjx"), fjx_config ))
+    #index_urls.append(('http://www.tcm100.com/user/yzheng/index.htm', os.path.join(herb_folder, "yz"), yz_config )) #药征
+    index_urls.append(('http://www.tcm100.com/user/wbtb/index.htm', os.path.join(clause_folder, "wbtb"), yz_config)) #温病条辨
     
     for url, folder, config in index_urls:
-        downloader = ItemDownloader(folder)
-        downloader.download_single_file(url, 'index.html')
+        #downloader = ItemDownloader(folder)
+        #downloader.download_single_file(url, 'index.html')
              
         provider = DownloadItemProvider(folder, config)
         provider.get_items()
         
-        downloader.download_files_in_index_file()   
+        #downloader.download_files_in_index_file()   
     print "done"
     
 

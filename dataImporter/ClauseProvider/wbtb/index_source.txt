@@ -1,0 +1,17 @@
+	url:http://www.tcm100.com/user/wbtb/zzbook4.htm	name:风温 温热 温疫 温毒 冬温
+	url:http://www.tcm100.com/user/wbtb/zzbook5.htm	name:暑温
+	url:http://www.tcm100.com/user/wbtb/zzbook6.htm	name:伏暑
+	url:http://www.tcm100.com/user/wbtb/zzbook7.htm	name:湿温
+	url:http://www.tcm100.com/user/wbtb/zzbook8.htm	name:温疟
+	url:http://www.tcm100.com/user/wbtb/zzbook9.htm	name:秋燥
+	url:http://www.tcm100.com/user/wbtb/zzbook10.htm	name:补：秋燥胜气论
+	url:http://www.tcm100.com/user/wbtb/zzbook11.htm	name:风温 温热 温疫 温毒 冬温
+	url:http://www.tcm100.com/user/wbtb/zzbook12.htm	name:暑温 伏暑
+	url:http://www.tcm100.com/user/wbtb/zzbook13.htm	name:寒湿
+	url:http://www.tcm100.com/user/wbtb/zzbook14.htm	name:湿温（疟、痢、疸、痹附）
+	url:http://www.tcm100.com/user/wbtb/zzbook15.htm	name:秋燥
+	url:http://www.tcm100.com/user/wbtb/zzbook16.htm	name:风温 温热 温疫 温毒 冬温
+	url:http://www.tcm100.com/user/wbtb/zzbook17.htm	name:暑温 伏暑
+	url:http://www.tcm100.com/user/wbtb/zzbook18.htm	name:寒湿
+	url:http://www.tcm100.com/user/wbtb/zzbook19.htm	name:湿温
+	url:http://www.tcm100.com/user/wbtb/zzbook20.htm	name:秋燥

@@ -14,7 +14,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),"..")))
 
 from Utility import *
   
-
 class web_extractor(object):
     def get_content_from(url):
         tried_time = 0
@@ -30,20 +29,65 @@ class web_extractor(object):
                 print "exception from get_content_from#", Exception,":",ex
                 tried_time += 1
                 waited_time = waited_time * 2
-                time.sleep( waited_time )
-    
+                time.sleep( waited_time )    
     get_content_from = staticmethod(get_content_from)
+    
+    def get_end_text(tag):
+        blocks = ['address', 'blockquote', 'body', 'br', 'dd', 'dir', 'div', 'dl', 'dt', 'fieldset', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'html', 'legend', 'menu', 'ol', 'p', 'ul'] 
+        none_display = ['head', 'input', 'link', 'meta', 'script', 'style', 'title'] 
+        inline_elements = ['a', 'abbr', 'acronym', 'b', 'big',  'cite', 'code', 'del', 'dfn', 'em', 'font', 'i', 'ins', 'kbd', 'label', 'option', 'q', 'samp', 'small', 'strike', 'strong', 'sub', 'sup', 'tt', 'u', 'var']
+        list_item = ['li']
+        inline_block = ['button', 'input', 'select', 'textarea']
+        table = ['table']
+        table_caption = ['caption'] 
+        table_row_group = ['tbody']
+        table_row = ['tr']
+        table_cell = ['td', 'th'] 
+        
+        end_text_category = {'\n':[], ' ':[], '':[]}
+        end_text_category['\n'].extend(blocks)
+        end_text_category['\n'].extend(list_item)
+        end_text_category['\n'].extend(none_display)
+        end_text_category['\n'].extend(inline_block)
+        end_text_category['\n'].extend(table)
+        end_text_category['\n'].extend(table_caption)
+        end_text_category['\n'].extend(table_row_group)
+        end_text_category['\n'].extend(table_row)
+        
+        end_text_category[' '].extend(inline_elements)
+        end_text_category[' '].extend(table_cell)
+       
+        prefix = ' '
+        postfix = ' '
+        for key, value in end_text_category.items():
+            if tag in value:
+                if tag=='br':
+                    prefix = key
+                else:
+                    postfix = key                   
+                return prefix, postfix
+
+        return ' ', ' '
+    get_end_text = staticmethod(get_end_text)
 
     def get_full_text(element):
+        prefix, postfix = web_extractor.get_end_text(element.tag)            
         items = [element.prefix, element.text, element.tail]
-        return ''.join([item for item in items if item is not None])
+        text = prefix + ''.join([item for item in items if item is not None]).strip() + postfix
+        #print "element.tag:"+ element.tag + " text:" + text
+        return text
     
     get_full_text = staticmethod(get_full_text)
         
     def get_text(element, include_text_from_descendant):
         if (not include_text_from_descendant):
             return element.text
-        return etree.tostring(element)
+        #return ''.join([web_extractor.get_full_text(descendant) for descendant in element.iter()])
+        full_text = ''
+        for child in element.iter():
+            full_text += web_extractor.get_full_text(child)
+        return full_text
+        #return etree.tostring(element)
     
     get_text = staticmethod(get_text)            
 

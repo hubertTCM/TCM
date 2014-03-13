@@ -22,6 +22,9 @@ class SingleComponentParser:
         self._known_medical.append(u'半夏') 
         self._known_medical.append(u'五味子')   
         self._known_medical.append(u'五味')  
+        self._known_medical.append(u'五灵脂')
+        self._known_medical.append(u'三棱')
+        self._known_medical.append(u'京 三棱')
         self._known_medical.append(u'庶（虫底）虫')
         
         #self._comment_pattern = ur"\uff08(\W+)\uff09"
@@ -70,7 +73,7 @@ class SingleComponentParser:
         return self.__adjust_quantity__(quantity), self.__adjst_unit__(unit)
     
     def __find_quantity__(self, item):
-        quantity_pattern =  ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a\百]{1,3}"
+        quantity_pattern =  ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a百]{1,3}"
         return re.findall(quantity_pattern, item)
 
     def __parse_quantity_unit__(self, item):
@@ -101,9 +104,7 @@ class SingleComponentParser:
         quantity = None
         unit = None
         comments = ''
-        
-        #comment_pattern = ur"\uff08(\W+)\uff09"
-            
+                    
         for name in self._known_medical: #庶（虫底）虫二十枚（熬，去足）
             if self._source_text.startswith(name):
                 medical = name
@@ -135,6 +136,28 @@ class SingleComponentParser:
         
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
+class ComponentsAdjustor:    
+    def adjust(self, components):
+        components.reverse() #防风　桔梗　桂枝　人参　甘草各一两
+        previous_quantity = None
+        previous_unit = None
+        for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
+            medical_name = component['medical']
+            if medical_name[-1] == "各":
+                previous_quantity = component['quantity']
+                previous_unit = component['unit']
+                component['medical'] = medical_name[:len(medical_name)-1]
+            else:
+                if not component['unit'] or len(component['unit'])== 0: 
+                    if not previous_unit > 0:
+                        component['quantity'] = previous_quantity
+                        component['unit'] = previous_unit
+                else:
+                    previous_quantity = None
+                    previous_unit = None                     
+        components.reverse()
+        return components
+    
 class PrescriptionParser:
     def __init__(self, text, prescription_name_end_tag):
         self._source_text = text  
@@ -256,7 +279,7 @@ def print_prescription(prescription):
     print "name: " + prescription['name']
     print "components:"  
     for component in prescription['components']:
-        Utility.print_dict(component)
+        Utility.convert_dict_to_string(component)
     print "comment: " + prescription['comment']  
     
 def print_prescription_list(prescriptions):
@@ -281,13 +304,14 @@ if __name__ == "__main__":
              u'蜀椒（去汗）', 
              u'蜀椒（去汗）等分', 
              u'蜀椒三分', 
+             u'蜀椒百分',
              u'蜀椒三分半']     
     
     for item in texts:
         print item + " "
         sp = SingleComponentParser(item)
         component = sp.get_component()
-        Utility.print_dict(component)
+        print Utility.convert_dict_to_string(component)
         
         
         

@@ -18,79 +18,96 @@ append_ancestors_to_system_path(3)
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.WebUtil import *
 
-class MedicalNameAdjustor:
-    def __init__(self):
-        medical_names = [u'飞 滑石', 
-                    u'白 通草',
-                    u'熟 附子',
-                    u'生 附子',
-                    u'生 石膏',
-                    u'生 白芍',
-                    u'炒 白芍',
-                    u'炙 甘草',
-                    u'藏 红花']
-        self._medical_name_map = {}
-        for item in medical_names:
-            self._medical_name_map[item] = re.sub(' +', '', item)
-            
-    def adjust(self, content):    
-        for key, value in self._medical_name_map.items():
-            content = content.replace(key, value)
+class PrescriptionParser_wbtb:
+    def __init__(self, clause_lines):
+        self._clause_lines = clause_lines  
+        self._adjustor = ComponentsAdjustor()    
         
-        return content
+    def __parse_components__(self, text):
+        if text.find(u"。") >=0 and text.find("（") < 0:
+            return None
+                
+        items = []
+        for item in [item.strip() for item in text.split(u'\u3000')]: #\u3000' is blank space:
+            items.extend(filter(lambda(x): len(x) > 0, [temp_item.strip() for temp_item in item.split(' ')]))           
+        if len(items) <= 0:
+            return None
         
-class HTMLToText:
-    def __init__(self, source_folder, config):
-        self._config = config
-        index_file_name = os.path.join(source_folder, "index_source.txt")
-        self._source_file_names = []
-        index_file = codecs.open(index_file_name, 'r', 'utf-8', 'ignore')
-        
-        if 'adjustors' in config:
-            self._adjustors = config['adjustors']
-            del config['adjustors']
-        else:
-            self._adjustors = []
-        
-        for line in index_file:
-            try:
-                value = Utility.get_dict_from(line.strip())
-                self._source_file_names.append(os.path.join(source_folder, value['name'].strip()+".html"))          
-            except Exception,ex:
-                print "***" + line
-                print Exception,":",ex
+        components = []
+        for item in items:
+            item = item.strip()
+            if len(item) > 0:
+                component_parser = SingleComponentParser(item)
+                component = component_parser.get_component()
+                components.append(component)
+                
+                print Utility.convert_dict_to_string(component)
 
-        index_file.close()
+        components = self._adjustor.adjust(components)
         
-    def __get_content_from__(self, file_name):        
-        source_file = codecs.open(file_name, 'r', 'utf-8', 'ignore')
-        content = source_file.read()
-        root = web_extractor.get_html_root_from_content(content)
-        values = web_extractor.get_values_from_html_tree(root, self._config)
-        if len(values) == 1:
-            return values[0]['content']
-        return ''
+        if (len(components) == 0):
+            print "*failed to get components from: " + text + '\n'
+            return None
+        
+        return components
     
-    def __adjust_content__(self, content):
-        for adjustor in self._adjustors:
-            content = adjustor.adjust(content)
-        return content
-    
-    def convert(self):
-        for source_file_name in self._source_file_names:
-            if source_file_name.find("index")> 0:
+    def __get_name__(self, text):
+        name_pattern = ur"(\W+)方$"
+        matches = re.findall(name_pattern, text)
+        if len(matches)==1:
+            return matches[0]
+        return None
+        
+    def __get_name_info__(self, text):    
+        method = None         
+        method_pattern = ur"[\uff08(](\W+)[)\uff09]$"#check ( in both of Chinese and English.
+        items = filter(lambda(x):len(x)>0, [item.strip() for item in re.split(method_pattern, text)])
+                
+        name = self.__get_name__(items[0])
+        if len(items)==2:
+            method = items[1]
+            if method[-1] == u"法":
+                method = method[:-1]
+        
+        if not name:
+            return {}
+        
+        info = {'name':name, 'method':method}
+        print "**" + Utility.convert_dict_to_string(info)
+        return info
+        
+    def get_prescriptions(self):
+        prescriptions = []# name, detail, components, source
+        
+        current_prescription = None    
+        for line in self._clause_lines:
+            info = self.__get_name_info__(line)
+            if info:   
+                if current_prescription and len(current_prescription['components'])>0:                  
+                    prescriptions.append(current_prescription)                        
+                current_prescription = {'components':[]}  
+                current_prescription.update(info)             
                 continue
             
-            content = self.__get_content_from__(source_file_name)
-            content = self.__adjust_content__(content)
+            if not current_prescription:
+                continue
             
-            to_file_name = source_file_name[:source_file_name.index(".")] + ".txt"          
-            txt_file = codecs.open(to_file_name, 'w', 'utf-8', 'ignore')
-            txt_file.write(content)
-            txt_file.close()
+            components = self.__parse_components__(line)
+            if components:
+                current_prescription['components'].extend(components)
+                continue
             
+            if current_prescription:
+                current_prescription['comment'] = line
+                    
+        if current_prescription and len(current_prescription['components']) > 0:
+            prescriptions.append(current_prescription) 
+  
+        return prescriptions
+
 class wbtb_provider:
     def __init__(self, source_folder):
+        self._come_from = {u'category': u'Book', u'name': u'温病条辩'} 
         index_file_name = os.path.join(source_folder, "index_source.txt")
         self._source_file_names = []
         index_file = codecs.open(index_file_name, 'r', 'utf-8', 'ignore')
@@ -99,32 +116,41 @@ class wbtb_provider:
                 value = Utility.get_dict_from(line.strip())
                 self._source_file_names.append(os.path.join(source_folder, value['name'].strip()+".txt"))          
             except Exception,ex:
-                print "***" + line
-                print Exception,":",ex
+                print Exception,":",ex, "***" + line
 
         index_file.close()
 
     def __create_caluse__(self, index, item_contents):
-        pass 
+        items = [item.strip() for item in item_contents if len(item.strip()) > 0]
+        content = ''
+        if len(items) > 0:
+            content = '\n'.join(items) 
+            parser = PrescriptionParser_wbtb(items) 
+            prescriptions = parser.get_prescriptions() 
+            for prescription in prescriptions:
+                prescription.update({'comeFrom' : self._come_from})          
+            
+        return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : self._come_from}
+    
+    def __is_start_line_of_clause__(self, line):
+        matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
+        return len(matches) > 0 and line.strip().index(u'\u3001') < 4
         
-    def __get_clauses_from__(self, file_name):
+    def __get_clauses_from__(self, file_name): 
         clauses = []
-        
+        print file_name
         source_file = codecs.open(file_name, 'r', 'utf-8')
-        item_contents = []
-        
+        clause_lines = []
         index = 0
-        for line in source_file:            
-            matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
-            if len(matches) > 0 and line.strip().index(u'\u3001') < 4:
-                if (len(item_contents) > 0):
-                    clauses.append(self.__create_caluse__(index, item_contents))
+        for line in source_file:
+            if self.__is_start_line_of_clause__(line):
+                if (len(clause_lines) > 0):
+                    clauses.append(self.__create_caluse__(index, clause_lines))
                 index += 1
-                item_contents = []
-                
-                item_contents.append(line.strip())
+                clause_lines = []                
+                clause_lines.append(line.strip())
             else:    
-                item_contents.append(line.strip())
+                clause_lines.append(line.strip())
                 
         source_file.close
             
@@ -134,19 +160,15 @@ class wbtb_provider:
                 
 if __name__ == "__main__":
     source_folder = os.path.dirname(__file__)
-    source_folder = os.path.join(source_folder, 'wbtb')
-    
-    adjustors = [MedicalNameAdjustor()]
-    config = {
-                'xpath':'//div[@class="content"]',
-                'extract_attributes':[{'target_attri_name':'content', 'include_text_from_descendant':True}
-                                    ],
-                'adjustors':adjustors
-                } 
-     
-    convertor = HTMLToText(source_folder, config)
-    convertor.convert()
-    
+    source_folder = os.path.join(source_folder, 'wbtb')   
     provider = wbtb_provider(source_folder)
     provider.get_all_clauses()
+    
+#     names = [u"加减生脉散方（酸甘化阴）",
+#              u"术附姜苓汤方（辛温苦淡法）",
+#              u"加减生脉散方"]
+#     parser = PrescriptionParser_wbtb("")
+#     for item in names:
+#         info = parser.__get_name_info__(item)        
+#         print item + " : " + Utility.convert_dict_to_string(info)
     print "done"

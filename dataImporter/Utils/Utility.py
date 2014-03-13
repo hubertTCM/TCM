@@ -2,7 +2,7 @@
 import re
 class Utility(object): 
     def get_dict_from(line): 
-        dict = {}
+        return_value = {}
         items = filter(lambda(x): len(x) > 0, line.split('\t'))
         for item in items:
             key_pairs = filter(lambda(x): len(x) > 0, item.split(':', 1))
@@ -12,17 +12,16 @@ class Utility(object):
             value = None
             if len(key_pairs)== 2:
                 value = key_pairs[1]
-            dict[key] = value
-        return dict
+            return_value[key] = value
+        return return_value
     get_dict_from = staticmethod(get_dict_from)
     
-    def print_dict(dictionary):
+    def convert_dict_to_string(dictionary):
         line = ''
         for key, value in dictionary.items():
             line += '\t' + str(key) + ":" +str(value)
-        print line
         return line
-    print_dict = staticmethod(print_dict)  
+    convert_dict_to_string = staticmethod(convert_dict_to_string)
       
     def convert_number(chinese_number): 
         if chinese_number == "半":
@@ -34,12 +33,11 @@ class Utility(object):
         
         for key, value in other_mapper.items():
             if chinese_number.find(key) == 0:
-                chinese_number = u'一' + chinese_number[1:]
-            else:
-                if chinese_number[-1] == key:
-                    chinese_number = chinese_number[:len(chinese_number)-1]
-                    for i in range(value):
-                        chinese_number+= u'\u96f6'
+                chinese_number = u'一' + chinese_number
+            if chinese_number[-1] == key:
+                chinese_number = chinese_number[:len(chinese_number)-1]
+                for i in range(value):
+                    chinese_number+= u'\u96f6'
                         
     
         number_mapper = {}
@@ -101,7 +99,7 @@ class Utility(object):
     append_if_not_none = staticmethod(append_if_not_none)
     
     def remove_none_from(source_list):
-        if (list is None):
+        if (source_list is None):
             return None
         return [item for item in source_list if item is not None]
     

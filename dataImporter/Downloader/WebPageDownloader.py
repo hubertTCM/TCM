@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 import codecs
 import os
+import re
 import sys
 
 from StringIO import StringIO
@@ -16,6 +17,105 @@ append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.WebUtil import *
 
+class BlankSpaceRemover:
+    def __init__(self, patterns):
+        self._patterns = patterns
+        
+    def __adjust__(self, pattern, content):
+        m = re.findall(pattern, content)
+        if m:
+            length = len(m)
+            new_content = ""
+            start_index = 0
+            for i in range(length):
+                sub_content = m[i]
+                end_index = content.find(sub_content, start_index)
+                new_content += content[start_index:end_index]
+                new_content += re.sub(' +', '', sub_content)
+                start_index = end_index + len(sub_content)
+                
+            new_content += content[start_index:]
+                
+            return new_content
+        else:
+            return content
+        
+    def adjust(self, content):
+        for pattern in self._patterns:
+            content = self.__adjust__(pattern, content)
+        return content
+
+class MedicalNameAdjustor:
+    def __init__(self):
+        medical_names = [ur'飞滑石', 
+                    ur'白通草',
+                    ur'熟附子',
+                    ur'生附子',
+                    ur'生石膏',
+                    ur'生白芍',
+                    ur'炒白芍',
+                    ur'炙甘草',
+                    ur'藏红花',
+                    ur'京三棱',
+                    ur'生牡蛎']
+        self._patterns = []
+        for name in medical_names:
+            self._patterns.append(' *'.join(ch for ch in name))
+            
+    def adjust(self, content):    
+        remover = BlankSpaceRemover(self._patterns)           
+        return remover.adjust(content)
+        
+class HTMLToText:
+    def __init__(self, source_folder, config):
+        self._config = config
+        index_file_name = os.path.join(source_folder, "index_source.txt")
+        self._source_file_names = []
+        index_file = codecs.open(index_file_name, 'r', 'utf-8', 'ignore')
+        
+        if 'adjustors' in config:
+            self._adjustors = config['adjustors']
+            del config['adjustors']
+        else:
+            self._adjustors = []
+        
+        for line in index_file:
+            try:
+                value = Utility.get_dict_from(line.strip())
+                self._source_file_names.append(os.path.join(source_folder, value['name'].strip()+".html"))          
+            except Exception,ex:
+                print "***" + line
+                print Exception,":",ex
+
+        index_file.close()
+        
+    def __get_content_from__(self, file_name):        
+        source_file = codecs.open(file_name, 'r', 'utf-8', 'ignore')
+        content = source_file.read()
+        root = web_extractor.get_html_root_from_content(content)
+        values = web_extractor.get_values_from_html_tree(root, self._config)
+        if len(values) == 1:
+            return values[0]['content']
+        return ''
+    
+    def __adjust_content__(self, content):
+        for adjustor in self._adjustors:
+            content = adjustor.adjust(content)
+        return content
+    
+    def convert(self):
+        for source_file_name in self._source_file_names:
+            if source_file_name.find("index")> 0:
+                continue
+            
+            content = self.__get_content_from__(source_file_name)
+            content = self.__adjust_content__(content)
+            
+            to_file_name = source_file_name[:source_file_name.index(".")] + ".txt"          
+            txt_file = codecs.open(to_file_name, 'w', 'utf-8', 'ignore')
+            txt_file.write(content)
+            txt_file.close()
+            
 class DownloadItemProvider:
     def __init__(self, source_folder, config):
         self._source = os.path.abspath(os.path.join(source_folder, 'index.html'))#source
@@ -36,7 +136,7 @@ class DownloadItemProvider:
         to_file_name = os.path.abspath(os.path.join(directory_name, 'index_source.txt'))
         to_file = codecs.open(to_file_name, 'w', 'utf-8', 'ignore')
         for value in values:
-            line = Utility.print_dict(value) + '\n'
+            line = Utility.convert_dict_to_string(value) + '\n'
             to_file.write(line)
         to_file.close()
         
@@ -95,13 +195,42 @@ if __name__ == "__main__":
     index_urls.append(('http://www.tcm100.com/user/wbtb/index.htm', os.path.join(clause_folder, "wbtb"), yz_config)) #温病条辨
     
     for url, folder, config in index_urls:
-        #downloader = ItemDownloader(folder)
-        #downloader.download_single_file(url, 'index.html')
-             
-        provider = DownloadItemProvider(folder, config)
-        provider.get_items()
-        
-        #downloader.download_files_in_index_file()   
+        pass
+#         downloader = ItemDownloader(folder)
+#         downloader.download_single_file(url, 'index.html')
+#               
+#         provider = DownloadItemProvider(folder, config)
+#         provider.get_items()
+#         
+#         downloader.download_files_in_index_file()  
+            
+    adjustors = [MedicalNameAdjustor(), 
+                 BlankSpaceRemover([ur"(（[^（）]+）)"])
+                 ]
+    config = {
+                'xpath':'//div[@class="content"]',
+                'extract_attributes':[{'target_attri_name':'content', 'include_text_from_descendant':True}
+                                    ],
+                'adjustors':adjustors
+                } 
+      
+    convertor = HTMLToText(os.path.join(clause_folder, 'wbtb'), config)
+    convertor.convert() 
+    
+    
+    items = [u"半夏（六钱）                        秫米（一两） 白芍（六钱）    桂枝（四钱， 桂枝少于                                  白芍者，表里异治也）              炙甘草（一钱） 生姜（三钱） 大枣（去核，二枚）",
+             u"桂枝 （四钱，虽云                          桂枝汤），却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
+             u"桂枝          四钱，虽云 桂枝汤，      却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end"]
+
+    patterns=[ur"(（[^（）]+）)",
+              u"\n[^（）]+\n"
+              ]
+    
+    a = BlankSpaceRemover(patterns)
+    for item in items:
+        line = item
+        print a.adjust(item)
+    
     print "done"
     
 

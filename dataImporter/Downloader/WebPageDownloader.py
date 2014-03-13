@@ -205,7 +205,7 @@ if __name__ == "__main__":
 #         downloader.download_files_in_index_file()  
             
     adjustors = [MedicalNameAdjustor(), 
-                 BlankSpaceRemover([ur"(（[^（）]+）)"])
+                 BlankSpaceRemover([ur"(（[^（）]+）)", u"\n[^（）]+\n"])
                  ]
     config = {
                 'xpath':'//div[@class="content"]',

@@ -136,28 +136,6 @@ class SingleComponentParser:
         
         return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
       
-class ComponentsAdjustor:    
-    def adjust(self, components):
-        components.reverse() #防风　桔梗　桂枝　人参　甘草各一两
-        previous_quantity = None
-        previous_unit = None
-        for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
-            medical_name = component['medical']
-            if medical_name[-1] == "各":
-                previous_quantity = component['quantity']
-                previous_unit = component['unit']
-                component['medical'] = medical_name[:len(medical_name)-1]
-            else:
-                if not component['unit'] or len(component['unit'])== 0: 
-                    if not previous_unit > 0:
-                        component['quantity'] = previous_quantity
-                        component['unit'] = previous_unit
-                else:
-                    previous_quantity = None
-                    previous_unit = None                     
-        components.reverse()
-        return components
-    
 class PrescriptionParser:
     def __init__(self, text, prescription_name_end_tag):
         self._source_text = text  

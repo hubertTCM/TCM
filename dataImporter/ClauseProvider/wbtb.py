@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-from PrescriptionParser import *
+from ComponentAdjustor import *
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -18,12 +18,77 @@ append_ancestors_to_system_path(3)
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.WebUtil import *
 
+class SingleComponentParser_wbtb:
+    '''
+            鸡子黄（生用，一枚）
+            鸡子黄（一枚，生用）
+            鸡子黄（一枚）
+            鸡子黄（一枚）
+            鸡子黄
+    '''
+    def __init__(self, text):
+        self._source_text = text#.replace(ur'\u3000',' ').strip()
+        self._herb = text
+        self._quantity_unit = None
+        self._comment = None
+        
+        
+    def __parse_quantity_comment__(self, text):   
+        quantity_unit_pattern = ur"([一二三四五六七八九十百]+[^，])"
+        successed = False
+        # （quantity, comment）
+        m = re.compile(ur"（" + quantity_unit_pattern + ur"[，]([^（）]+)）").match(text)
+        if m:
+            self._quantity_unit = m.group(1).strip()
+            self._comment = m.group(2)
+            successed = True
+            
+        if not successed:#(comment,quantity)
+            m = re.compile(ur"（([^（）]+)[，]" + quantity_unit_pattern + ur"）").match(text)
+            if m:                
+                self._quantity_unit = m.group(1)
+                self._comment = m.group(2)
+                successed = True
+        
+        if not successed:#(quantity)
+            m = re.compile(ur"（" + quantity_unit_pattern + ur"）").match(text)
+            if m:
+                successed = True
+                self._quantity_unit = m.group(1)
+                successed = True
+        if not successed:#(comment)
+            m = re.compile(ur"（(\W+)）").match(text)
+            if m:
+                successed = True
+                self._comment = m.group(1)
+                successed = True
+         
+    def __parse_normal_medical_name__(self):      
+        pattern = ur"([^（）]+)(（\W+）)"       
+        m = re.compile(pattern).match(self._source_text)
+        if m: #medical(other)
+            self._herb = m.group(1).strip()
+            self.__parse_quantity_comment__(m.group(2))
+            
+    def get_component(self):   
+        m = MedicalNameAdjustor(self._source_text)
+        herb, other = m.split_with_medical_name()
+        if herb:
+            self._herb = herb
+            self.__parse_quantity_comment__(other)
+        else:
+            self.__parse_normal_medical_name__()
+            
+        return {'medical':self._herb, 'comment':self._comment, 'quantity_unit':self._quantity_unit}  
+    
+
 class PrescriptionParser_wbtb:
     def __init__(self, clause_lines):
         self._clause_lines = clause_lines  
         self._adjustor = ComponentsAdjustor()    
         
     def __parse_components__(self, text):
+        text = text.replace(ur'\u3000',' ').strip()
         if text.find(u"。") >=0 and text.find("（") < 0:
             return None
                 
@@ -37,13 +102,13 @@ class PrescriptionParser_wbtb:
         for item in items:
             item = item.strip()
             if len(item) > 0:
-                component_parser = SingleComponentParser(item)
+                component_parser = SingleComponentParser_wbtb(item)
                 component = component_parser.get_component()
                 components.append(component)
                 
                 print Utility.convert_dict_to_string(component)
 
-        components = self._adjustor.adjust(components)
+        #components = self._adjustor.adjust(components)
         
         if (len(components) == 0):
             print "*failed to get components from: " + text + '\n'
@@ -124,11 +189,12 @@ class wbtb_provider:
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
         content = ''
         if len(items) > 0:
-            content = '\n'.join(items) 
-            parser = PrescriptionParser_wbtb(items) 
-            prescriptions = parser.get_prescriptions() 
-            for prescription in prescriptions:
-                prescription.update({'comeFrom' : self._come_from})          
+            content = '\n'.join(items)
+        items = content.split('\n')     
+        parser = PrescriptionParser_wbtb(items) 
+        prescriptions = parser.get_prescriptions() 
+        for prescription in prescriptions:
+            prescription.update({'comeFrom' : self._come_from})          
             
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : self._come_from}
     
@@ -164,11 +230,25 @@ if __name__ == "__main__":
     provider = wbtb_provider(source_folder)
     provider.get_all_clauses()
     
-#     names = [u"加减生脉散方（酸甘化阴）",
-#              u"术附姜苓汤方（辛温苦淡法）",
-#              u"加减生脉散方"]
-#     parser = PrescriptionParser_wbtb("")
-#     for item in names:
-#         info = parser.__get_name_info__(item)        
-#         print item + " : " + Utility.convert_dict_to_string(info)
+#     items = [
+#             u"鸡子黄（生用，一枚）",
+#             u"鸡子黄（一枚，生用）",
+#             u"鸡子黄（一枚）",
+#             u"鸡子黄（生用）",
+#             u"鸡子黄",
+#             u"百合（生用，一枚）",
+#             u"百合"
+#             ]
+#     #pattern = ur"([^（）]+)（([^（）]+)）"
+#     quantity_pattern = ur"([一二三四五六七八九十百]+\W+)" 
+#     pattern = ur"([^（）]+)（" + quantity_pattern + ur"[，]([^（）]+)"
+#     
+#     p = re.compile(pattern)
+#     for item in items:
+#         print item
+#         m = p.match(item)
+#         if m:
+#             print "        ==         ", m.group(1), " 0  ", m.group(2), " 0  ", m.group(3)
+#         else:
+#             print item, "%"
     print "done"

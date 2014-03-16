@@ -55,13 +55,37 @@ class MedicalNameAdjustor:
         
         return self._medical_name   
 
-
-class QuantityAdjustor:
-    def __init__(self, quantity, unit):
+class QuantityParser:
+    def __init__(self, text):
+        self._source_text = text.strip()
+        self._unit = None
+        self._quantity = None
+        
+    def __adjust__(self):
         pass
     
-    def adjust(self):
-        pass
+    def parse(self):
+        m = re.findall(ur"[一二三四五六七八九十半百]+", self._source_text)
+        pairs = [] 
+        if m:
+            start_index = 0
+            current_unit = None
+            current_quantity = None
+            for i in range(len(m)):
+                index = self._source_text.index(m[i], start_index)
+                if start_index > 0:
+                    current_unit = self._source_text[start_index:index]
+                    pairs.append((current_quantity, current_unit))
+                current_quantity = m[i]
+                start_index = index + len(m[i])
+            pairs.append((current_quantity, self._source_text[start_index:]))
+        
+        #TBD, need update here to convert UOM
+        if len(pairs) == 1:
+            str_quantity, self._unit = pairs[0]
+            self._quantity = Utility.convert_number(str_quantity)
+        
+        return self._quantity, self._unit   
      
 class ComponentsAdjustor:    
     def adjust(self, components):
@@ -85,3 +109,12 @@ class ComponentsAdjustor:
         components.reverse()
         return components
     
+if __name__ == "__main__":
+    items = [
+             u"一一二枚",
+             u"一二钱五分",
+             ]
+    for item in items:
+        p =QuantityParser(item)
+        pairs = p.parse()
+        print pairs

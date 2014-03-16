@@ -45,9 +45,12 @@ class BlankSpaceRemover:
             content = self.__adjust__(pattern, content)
         return content
 
+
+
 class MedicalNameAdjustor:
     def __init__(self):
-        medical_names = [ur'飞滑石', 
+        medical_names = [
+                    ur'飞滑石', 
                     ur'白通草',
                     ur'熟附子',
                     ur'生附子',
@@ -57,14 +60,64 @@ class MedicalNameAdjustor:
                     ur'炙甘草',
                     ur'藏红花',
                     ur'京三棱',
-                    ur'生牡蛎']
+                    ur'生牡蛎',
+                    ur'真阿胶',
+                    ur'鲜竹叶心',
+                    ur'绵茵陈',
+                    ur'北秦皮',
+                    ur'生黄柏']
         self._patterns = []
         for name in medical_names:
             self._patterns.append(' *'.join(ch for ch in name))
+    
+    def __adjust__(self, content):
+#         #
+#         #绵茵陈白芷北秦皮茯苓皮黄柏藿香
+#         #人参山药茯苓莲子芡实补骨脂苁蓉萸肉五味子巴戟天菟丝子覆盆子
+#         #熟地白芍附子五味炮姜茯苓
+#         #熟地黄禹余粮五味子
+#         #人参白芍附子茯苓炙甘草五味子
+#         #川连黄芩干姜银花楂炭白芍木香汁
+#         #
+#         pairs = []
+#         pairs.append(u'绵茵陈白芷北秦皮茯苓皮黄柏藿香', u'绵茵陈 白芷 北秦皮 茯苓皮 黄柏 藿香')
+#         pairs.append(u'人参山药茯苓莲子芡实补骨脂苁蓉萸肉五味子巴戟天菟丝子覆盆子', u'人参 山药 茯苓 莲子 芡实 补骨脂 苁蓉 萸肉 五味子 巴戟天 菟丝子 覆盆子')
+#         pairs.append(u'熟地白芍附子五味炮姜茯苓', u'熟地 白芍 附子 五味 炮姜 茯苓')
+#         pairs.append(u'熟地黄禹余粮五味子', u'熟地黄 禹余粮 五味子')
+#         pairs.append(u'人参白芍附子茯苓炙甘草五味子', u'人参 白芍 附子 茯苓 炙甘草 五味子')
+#         pairs.append(u'川连黄芩干姜银花楂炭白芍木香汁', u'川连 黄芩 干姜 银花 楂炭 白芍 木香汁')
+#         
+#         adjustor_map = {}
+#         for key, value in pairs:
+#             adjustor_map[' *'.join(ch for ch in key)] = value
+#         
+#         for pattern, value in adjustor_map.items():
+#             m = re.findall(pattern, content)
+#             if m:
+#                 length = len(m)
+#                 new_content = ""
+#                 start_index = 0
+#                 for i in range(length):
+#                     sub_content = m[i]
+#                     end_index = content.find(sub_content, start_index)
+#                     new_content += content[start_index:end_index]
+#                     new_content += value
+#                     start_index = end_index + len(sub_content)
+#                     
+#                 new_content += content[start_index:]
+#                     
+#                 return new_content
+#             else:
+#                 return content
+
+        return content
+    
             
     def adjust(self, content):    
         remover = BlankSpaceRemover(self._patterns)           
-        return remover.adjust(content)
+        content = remover.adjust(content)
+        
+        return content
         
 class HTMLToText:
     def __init__(self, source_folder, config):
@@ -204,8 +257,9 @@ if __name__ == "__main__":
 #         
 #         downloader.download_files_in_index_file()  
             
-    adjustors = [MedicalNameAdjustor(), 
-                 BlankSpaceRemover([ur"(（[^（）]+）)", u"\n[^（）]+\n"])
+    adjustors = [ 
+                 BlankSpaceRemover([ur"(（[^（）]+）)", u"\n[^（）]+[。]\n"]),
+                 MedicalNameAdjustor()
                  ]
     config = {
                 'xpath':'//div[@class="content"]',

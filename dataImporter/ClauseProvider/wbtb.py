@@ -30,24 +30,24 @@ class SingleComponentParser_wbtb:
         self._source_text = text#.replace(ur'\u3000',' ').strip()
         self._herb = text
         self._quantity_unit = None
-        self._comment = None
+        self._comments = None
         
         
     def __parse_quantity_comment__(self, text):   
-        quantity_unit_pattern = ur"([一二三四五六七八九十百]+[^，])"
+        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，])"
         successed = False
         # （quantity, comment）
         m = re.compile(ur"（" + quantity_unit_pattern + ur"[，]([^（）]+)）").match(text)
         if m:
             self._quantity_unit = m.group(1).strip()
-            self._comment = m.group(2)
+            self._comments = m.group(2)
             successed = True
             
         if not successed:#(comment,quantity)
             m = re.compile(ur"（([^（）]+)[，]" + quantity_unit_pattern + ur"）").match(text)
             if m:                
                 self._quantity_unit = m.group(1)
-                self._comment = m.group(2)
+                self._comments = m.group(2)
                 successed = True
         
         if not successed:#(quantity)
@@ -60,7 +60,7 @@ class SingleComponentParser_wbtb:
             m = re.compile(ur"（(\W+)）").match(text)
             if m:
                 successed = True
-                self._comment = m.group(1)
+                self._comments = m.group(1)
                 successed = True
          
     def __parse_normal_medical_name__(self):      
@@ -78,18 +78,40 @@ class SingleComponentParser_wbtb:
             self.__parse_quantity_comment__(other)
         else:
             self.__parse_normal_medical_name__()
-            
-        return {'medical':self._herb, 'comment':self._comment, 'quantity_unit':self._quantity_unit}  
+        
+        quantity, unit = (None, None)
+        if self._quantity_unit:
+            quantity_parser = QuantityParser(self._quantity_unit)
+            quantity, unit = quantity_parser.parse()
+         
+        return {'medical': self._herb, 'quantity': quantity, 'unit': unit, 'comments': self._comments} 
+        #return {'medical':self._herb, 'comment':self._comment, 'quantity_unit':self._quantity_unit}  
     
 
 class PrescriptionParser_wbtb:
     def __init__(self, clause_lines):
         self._clause_lines = clause_lines  
-        self._adjustor = ComponentsAdjustor()    
+        self._adjustor = ComponentsAdjustor() 
+        
+    def __is_component_info__(self, text):
+        #水八杯，先煮
+        if text.find(u"。") >=0 and text.find("（") < 0:
+            return False
+        exclude_patterns = [
+                            ur"[^（）]*水[一二三四五六七八九十半百]+[杯升]"
+                            ]
+        for pattern in exclude_patterns:
+            m = re.findall(pattern, text)
+            if len(m) >0:
+                print m[0]
+                return False
+        return True       
         
     def __parse_components__(self, text):
         text = text.replace(ur'\u3000',' ').strip()
-        if text.find(u"。") >=0 and text.find("（") < 0:
+#         if text.find(u"。") >=0 and text.find("（") < 0:
+#             return None
+        if not self.__is_component_info__(text):
             return None
                 
         items = []

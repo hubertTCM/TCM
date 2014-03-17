@@ -123,7 +123,7 @@ PRESCRIPTION_COMPONENT_CATEGORY = (
     (u'Prescription', u'方剂')
                     )
 class AbstractPrescriptionComponent(models.Model):
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, null=False, primary_key=True)
     category = models.CharField(max_length=20, null = False, choices = PRESCRIPTION_COMPONENT_CATEGORY)
             
 class Herb(AbstractPrescriptionComponent):

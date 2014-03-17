@@ -54,7 +54,7 @@ class FebribleDiseaseProvider:
                 
         shl.close() 
         
-        clauses.append(self.__create_caluse(index, item_contents))
+        clauses.append(self.__create_caluse__(index, item_contents))
         return clauses
 
 if __name__ == "__main__":

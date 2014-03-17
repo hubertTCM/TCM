@@ -46,7 +46,6 @@ class BlankSpaceRemover:
         return content
 
 
-
 class MedicalNameAdjustor:
     def __init__(self):
         medical_names = [

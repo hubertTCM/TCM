@@ -109,8 +109,6 @@ class PrescriptionParser_wbtb:
         
     def __parse_components__(self, text):
         text = text.replace(ur'\u3000',' ').strip()
-#         if text.find(u"。") >=0 and text.find("（") < 0:
-#             return None
         if not self.__is_component_info__(text):
             return None
                 
@@ -194,6 +192,10 @@ class PrescriptionParser_wbtb:
 
 class wbtb_provider:
     def __init__(self, source_folder):
+        if not source_folder:
+            source_folder = os.path.dirname(__file__)
+            source_folder = os.path.join(source_folder, 'wbtb')
+            
         self._come_from = {u'category': u'Book', u'name': u'温病条辩'} 
         index_file_name = os.path.join(source_folder, "index_source.txt")
         self._source_file_names = []
@@ -221,7 +223,8 @@ class wbtb_provider:
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : self._come_from}
     
     def __is_start_line_of_clause__(self, line):
-        matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
+        #matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
+        matches = re.findall(ur"\s*[一二三四五六七八九十百]{1,3}\u3001", line)
         return len(matches) > 0 and line.strip().index(u'\u3001') < 4
         
     def __get_clauses_from__(self, file_name): 
@@ -241,10 +244,19 @@ class wbtb_provider:
                 clause_lines.append(line.strip())
                 
         source_file.close
+        
+        if len(clause_lines) > 0:
+            clauses.append(self.__create_caluse__(index, clause_lines))
+        
+        return clauses
             
     def get_all_clauses(self):
+        clauses = []
         for file_name in self._source_file_names:
-            self.__get_clauses_from__(file_name)
+            items = self.__get_clauses_from__(file_name)
+            if len(items) > 0:
+                clauses.extend(items)
+        return clauses
                 
 if __name__ == "__main__":
     source_folder = os.path.dirname(__file__)

@@ -5,6 +5,8 @@ from django.core.management import setup_environ
 
 from ClauseProvider.TreatiseOnFebrileDiseases import *
 from ClauseProvider.GoldenChamber import *
+from ClauseProvider.wbtb import wbtb_provider
+
 from dataImporter.Utils.Utility import *
 from DataSourceImporter import *
 from prescriptionImporter import *
@@ -66,6 +68,7 @@ class Importer:
         self._providers = []
         self._providers.append(FebribleDiseaseProvider())
         self._providers.append(GoldenChamberProvider())
+        self._providers.append(wbtb_provider(None))
     
     def import_all_clauses(self):
         for source_provider in self._providers:

@@ -31,6 +31,10 @@ class PrescriptionHelper:
         for medical in known_medical_names:
             if name.startswith(medical):
                 return False
+            
+        herbs = Herb.objects.filter(name=name)
+        if len(herbs) == 0:
+            return False
         
         prescription_end_tags = []
         prescription_end_tags.append(u'汤')
@@ -47,7 +51,6 @@ class PrescriptionHelper:
     
     is_prescription_name = staticmethod(is_prescription_name)  
     
-
 class SinglePrescriptionImporter:
     def __init__(self, prescription):
         self._prescription = prescription
@@ -62,23 +65,25 @@ class SinglePrescriptionImporter:
             unit.save()
         return unit
         
-    def __get_component__(self, name):
-        if not PrescriptionHelper.is_prescription_name(name):
-            herb, is_created = Herb.objects.get_or_create(name = name)
-            if is_created:
-                herb.category = 'Herb'
-                herb.save()
-                return herb
+    def __get_herb__(self, name):
+        herb, is_created = Herb.objects.get_or_create(name = name)
+        if is_created:
+            herb.category = 'Herb'
+            herb.save()
             return herb
-        
-        return Prescription.objects.get(name = name)       
+        return herb              
            
-        
+#     TBD    
     def __import_composition__(self, db_prescription, component):
         try:
-            db_composition = PrescriptionComposition()
+            medical_name = component['medical']
+            if not PrescriptionHelper.is_prescription_name(medical_name):
+                db_composition = HerbComponent()
+                db_composition.component = self.__get_herb__(medical_name)
+            else:
+                db_composition = PrescriptionComponent()
+                
             db_composition.prescription = db_prescription
-            db_composition.component = self.__get_component__(component['medical'])
             db_composition.quantity = component['quantity']
             db_composition.unit = self.__get_unit__(component['unit'])
             db_composition.comment = component['comments']
@@ -87,6 +92,7 @@ class SinglePrescriptionImporter:
         except Exception,ex:
             print Exception,":",ex, "prescription: ",db_prescription.name, " medical: ",component['medical'], " quantity", component['quantity'], " unit", component['unit']
     
+#   TBD
     def do_import(self):
         try:
             db_prescription = Prescription()    

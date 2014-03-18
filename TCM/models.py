@@ -118,28 +118,40 @@ class ClauseCategoryReference(models.Model):
         unique_together = ['clause', 'category']
         
         
-PRESCRIPTION_COMPONENT_CATEGORY = (
-    (u'Herb', u'中药'),
-    (u'Prescription', u'方剂')
-                    )
-class AbstractPrescriptionComponent(models.Model):
-    name = models.CharField(max_length=255, null=False, primary_key=True)
-    category = models.CharField(max_length=20, null = False, choices = PRESCRIPTION_COMPONENT_CATEGORY)
+# PRESCRIPTION_COMPONENT_CATEGORY = (
+#     (u'Herb', u'中药'),
+#     (u'Prescription', u'方剂')
+#                     )
+# class AbstractPrescriptionComponent(models.Model):
+#     name = models.CharField(max_length=255, null=False, primary_key=True)
+#     category = models.CharField(max_length=20, null = False, choices = PRESCRIPTION_COMPONENT_CATEGORY)
             
-class Herb(AbstractPrescriptionComponent):
+class Herb(models.Model):
+    name = models.CharField(max_length=255, null=False, primary_key=True)
     description = models.TextField(null=True)
 
 class HerbUnit(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
     description = models.TextField(null=True)
         
-class Prescription(AbstractPrescriptionComponent): #方剂
+class Prescription(models.Model): 
+    name = models.CharField(max_length=255, null=False, primary_key=False)
     comeFrom = models.ForeignKey(DataSource, null=True)
     comment = models.TextField(null=True)
     
-class PrescriptionComposition(models.Model):
+#Prescription may composite with prescription and herb. For example: 茵陈五苓散
+class HerbComponent(models.Model):
     prescription = models.ForeignKey(Prescription, related_name='prescription', null=False)
-    component = models.ForeignKey(AbstractPrescriptionComponent, null=False)
+    component = models.ForeignKey(Herb, null=False)
+    unit = models.ForeignKey(HerbUnit, null=True)
+    quantity = models.FloatField(null=True) 
+    comment = models.TextField(null=True)
+    class Meta:
+        unique_together = ['prescription', 'component']
+        
+class PrescriptionComponent(models.Model):
+    prescription = models.ForeignKey(Prescription, related_name='prescription', null=False)
+    component = models.ForeignKey(Prescription, null=False)
     unit = models.ForeignKey(HerbUnit, null=True)
     quantity = models.FloatField(null=True) 
     comment = models.TextField(null=True)

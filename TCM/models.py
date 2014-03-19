@@ -116,19 +116,16 @@ class ClauseCategoryReference(models.Model):
     category = models.ForeignKey(ClauseCategory)
     class Meta:
         unique_together = ['clause', 'category']
-        
-        
-# PRESCRIPTION_COMPONENT_CATEGORY = (
-#     (u'Herb', u'中药'),
-#     (u'Prescription', u'方剂')
-#                     )
-# class AbstractPrescriptionComponent(models.Model):
-#     name = models.CharField(max_length=255, null=False, primary_key=True)
-#     category = models.CharField(max_length=20, null = False, choices = PRESCRIPTION_COMPONENT_CATEGORY)
-            
+                  
 class Herb(models.Model):
     name = models.CharField(max_length=255, null=False, primary_key=True)
     description = models.TextField(null=True)
+    
+class HerbAlias(models.Model):
+    name = models.CharField(max_length=255, null=False, primary_key=True)
+    standardName = models.ForeignKey(Herb, null=False)
+    class Meta:
+        unique_together = ['name', 'standardName']
 
 class HerbUnit(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
@@ -141,7 +138,7 @@ class Prescription(models.Model):
     
 #Prescription may composite with prescription and herb. For example: 茵陈五苓散
 class HerbComponent(models.Model):
-    prescription = models.ForeignKey(Prescription, related_name='prescription', null=False)
+    prescription = models.ForeignKey(Prescription, null=False)
     component = models.ForeignKey(Herb, null=False)
     unit = models.ForeignKey(HerbUnit, null=True)
     quantity = models.FloatField(null=True) 

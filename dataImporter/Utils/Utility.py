@@ -118,6 +118,10 @@ class Utility(object):
                 dest[key] = value
                 
     apply_default_if_not_exist = staticmethod(apply_default_if_not_exist)
+    
+    def remove_blank_space(content):
+        return re.sub('[ \u3000]+', '', content)
+    remove_blank_space = staticmethod(remove_blank_space)
       
     def remove_redundant_space(source):
         content = source.replace('&nbsp', u' ')

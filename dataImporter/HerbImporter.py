@@ -32,7 +32,9 @@ class KnownAliasProvider:
                 (ur"真阿胶", ur"阿胶"),
                 (ur"鲜竹叶心", ur"竹叶"),
                 (ur"北秦皮", ur"秦皮"),
-                (ur"生黄柏", ur"黄柏")
+                (ur"生黄柏", ur"黄柏"),
+                (ur"公丁香", ur"丁香"),
+                (ur"倭 硫黄", ur"硫黄")
                  ]
         return items
 

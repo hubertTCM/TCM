@@ -16,64 +16,7 @@ def append_ancestors_to_system_path(levels):
 append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.WebUtil import *
-
-class BlankSpaceRemover:
-    def __init__(self, patterns):
-        self._patterns = patterns
-        
-    def __adjust__(self, pattern, content):
-        m = re.findall(pattern, content)
-        if m:
-            length = len(m)
-            new_content = ""
-            start_index = 0
-            for i in range(length):
-                sub_content = m[i]
-                end_index = content.find(sub_content, start_index)
-                new_content += content[start_index:end_index]
-                new_content += re.sub(' +', '', sub_content)
-                start_index = end_index + len(sub_content)
-                
-            new_content += content[start_index:]
-                
-            return new_content
-        else:
-            return content
-        
-    def adjust(self, content):
-        for pattern in self._patterns:
-            content = self.__adjust__(pattern, content)
-        return content
-
-
-class MedicalNameAdjustor:
-    def __init__(self):
-        medical_names = [
-                    ur'飞滑石', 
-                    ur'白通草',
-                    ur'熟附子',
-                    ur'生附子',
-                    ur'生石膏',
-                    ur'生白芍',
-                    ur'炒白芍',
-                    ur'炙甘草',
-                    ur'藏红花',
-                    ur'京三棱',
-                    ur'生牡蛎',
-                    ur'真阿胶',
-                    ur'鲜竹叶心',
-                    ur'绵茵陈',
-                    ur'北秦皮',
-                    ur'生黄柏']
-        self._patterns = []
-        for name in medical_names:
-            self._patterns.append(' *'.join(ch for ch in name))       
-            
-    def adjust(self, content):    
-        remover = BlankSpaceRemover(self._patterns)           
-        content = remover.adjust(content)
-        
-        return content
+from dataImporter.Utils.HerbUtil import BlankSpaceRemover, MedicalNameAdjustor
         
 class HTMLToText:
     def __init__(self, source_folder, config):

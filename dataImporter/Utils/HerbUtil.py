@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+from operator import itemgetter
 from Utility import *
 
 def append_ancestors_to_system_path(levels):
@@ -91,27 +92,53 @@ class ItemReplaceAdjustor:
 
     def adjust(self, content):
         for from_value, to_value in self._pairs:
-            def value_fetcher(value):
-                return to_value
-            adjustor = ItemAdjustor(from_value, value_fetcher)
+            adjustor = ItemAdjustor(from_value, lambda x: to_value)
             content = adjustor.adjust(content)
         return content
 
 class MedicalNameAdjustor:
     def __init__(self):
-        self._split_items =[
-                      (ur"甘草乌梅", ur"甘草 乌梅"),
-                      (ur"干姜黄连", ur"干姜 黄连")
-                      ]
+#         
+#         self._split_items =[
+#                       (ur"甘草乌梅", ur"甘草 乌梅"),
+#                       (ur"干姜黄连", ur"干姜 黄连")
+#
         self._patterns = []
-        herbUtility = HerbUtility()  
-        for name in herbUtility.get_all_herbs():
-            self._patterns.append(' *'.join(ch for ch in name))       
+        self._herbUtility = HerbUtility() 
+        for name in self._herbUtility.get_all_herbs():
+            self._patterns.append(' *'.join(ch for ch in name)) 
+        
+        #self.__build_items_should_split__()
+              
+    def __get_contained_herbs__(self, content):
+        herbs = []
+        for herb in self._herbUtility.get_all_herbs():
+            if content.find(herb) >= 0:
+                herbs.append(herb)
+        return herbs
+            
+    def __build_items_should_split__(self, content):
+        split_items = []
+        herbs = self.__get_contained_herbs__(content)
+        for herb1 in herbs:
+            for herb2 in herbs:
+                if herb1 == herb2:
+                    continue
+                
+                item = herb1+herb2
+                split_items.append( (item, herb1 + " " + herb2) )
+#         split_items.sort(key=lambda x: len(itemgetter(x[0])), reverse=True)    
+        split_items.sort(key=lambda x: len(x[0]), reverse=True) 
+#         for item in split_items:
+#             print item[0],  "  *  ", item[1]
+        #[print itemgetter(item[0]) for item in split_items]        
+        return split_items
             
     def adjust(self, content):    
         remover = BlankSpaceRemover(self._patterns)           
         content = remover.adjust(content)
-        ra = ItemReplaceAdjustor(self._split_items)
+        
+        ra = ItemReplaceAdjustor(self.__build_items_should_split__(content))
         content = ra.adjust(content)
         return content
 

@@ -123,9 +123,11 @@ class MedicalNameAdjustor:
         for herb1 in herbs:
             for herb2 in herbs:
                 if herb1 == herb2:
+                    continue                
+                item = herb1+herb2
+                if item in self._herbUtility.get_all_herbs():
                     continue
                 
-                item = herb1+herb2
                 split_items.append( (item, herb1 + " " + herb2) )
 #         split_items.sort(key=lambda x: len(itemgetter(x[0])), reverse=True)    
         split_items.sort(key=lambda x: len(x[0]), reverse=True) 

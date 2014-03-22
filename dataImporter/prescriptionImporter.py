@@ -3,6 +3,7 @@ import os
 import sys
 
 from dataImporter.Utils.Utility import *
+from dataImporter.Utils.HerbUtil import HerbUtility
 from DataSourceImporter import *
 
 def append_ancestors_to_system_path(levels):
@@ -22,7 +23,10 @@ from TCM.models import *
 setup_environ(TCM.settings)
 
 class PrescriptionHelper:
-    def is_prescription_name(name):
+    def __init__(self):
+        self._herbUtility = HerbUtility()
+        
+    def is_prescription_name(self, name):
         known_medical_names = []
         known_medical_names.append(u'石膏')
         known_medical_names.append(u'铅丹')
@@ -32,9 +36,8 @@ class PrescriptionHelper:
             if name.startswith(medical):
                 return False
             
-        herbs = Herb.objects.filter(name=name)
-        if len(herbs) == 0:
-            return False
+        if name in self._herbUtility.get_all_herbs():
+            return False    
         
         prescription_end_tags = []
         prescription_end_tags.append(u'汤')
@@ -49,12 +52,11 @@ class PrescriptionHelper:
         
         return False
     
-    is_prescription_name = staticmethod(is_prescription_name)  
-    
 class SinglePrescriptionImporter:
-    def __init__(self, prescription):
+    def __init__(self, prescription, prescription_helper):
         self._prescription = prescription
         self._source_importer = SourceImporter()
+        self._prescription_helper = prescription_helper
         
     def __get_unit__(self, name):   
         if not name:
@@ -77,7 +79,7 @@ class SinglePrescriptionImporter:
     def __import_composition__(self, db_prescription, component):
         try:
             medical_name = component['medical']
-            if not PrescriptionHelper.is_prescription_name(medical_name):
+            if not self._prescription_helper.is_prescription_name(medical_name):
                 db_composition = HerbComponent()
                 db_composition.component = self.__get_herb__(medical_name)
             else:
@@ -110,12 +112,12 @@ class SinglePrescriptionImporter:
 class PrescriptionsImporter:
     def __init__(self, prescriptions):
         self._prescriptions = prescriptions
+        self._prescription_helper = PrescriptionHelper()
     
     def do_import(self):
         for prescription in self._prescriptions:
-            importer = SinglePrescriptionImporter(prescription)
+            importer = SinglePrescriptionImporter(prescription, self._prescription_helper)
             importer.do_import()
             
 if __name__ == "__main__":
-    PrescriptionHelper.is_prescription_name(u'石膏')
     print "no data to import"

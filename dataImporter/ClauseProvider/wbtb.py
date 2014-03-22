@@ -40,27 +40,27 @@ class SingleComponentParser_wbtb:
         m = re.compile(ur"（" + quantity_unit_pattern + ur"[，]([^（）]+)）").match(text)
         if m:
             self._quantity_unit = m.group(1).strip()
-            self._comments = m.group(2)
+            self._comments = m.group(2).strip()
             successed = True
             
         if not successed:#(comment,quantity)
             m = re.compile(ur"（([^（）]+)[，]" + quantity_unit_pattern + ur"）").match(text)
             if m:                
-                self._quantity_unit = m.group(1)
-                self._comments = m.group(2)
+                self._quantity_unit = m.group(2).strip()
+                self._comments = m.group(1).strip()
                 successed = True
         
         if not successed:#(quantity)
             m = re.compile(ur"（" + quantity_unit_pattern + ur"）").match(text)
             if m:
                 successed = True
-                self._quantity_unit = m.group(1)
+                self._quantity_unit = m.group(1).strip()
                 successed = True
         if not successed:#(comment)
             m = re.compile(ur"（(\W+)）").match(text)
             if m:
                 successed = True
-                self._comments = m.group(1)
+                self._comments = m.group(1).strip()
                 successed = True
          
     def __parse_normal_medical_name__(self):      
@@ -156,7 +156,9 @@ class PrescriptionParser_wbtb:
         
         if not name:
             return {}
-        
+        name = Utility.remove_blank_space(name)
+        if method:
+            method = Utility.remove_blank_space(method)
         info = {'name':name, 'method':method}
         print "**" + Utility.convert_dict_to_string(info)
         return info
@@ -259,11 +261,15 @@ class wbtb_provider:
         return clauses
                 
 if __name__ == "__main__":
+    c = SingleComponentParser_wbtb(ur"麦冬（不去心，二钱）").get_component()
+    print Utility.convert_dict_to_string(c)
+    
     source_folder = os.path.dirname(__file__)
     source_folder = os.path.join(source_folder, 'wbtb')   
     provider = wbtb_provider(source_folder)
     provider.get_all_clauses()
     
+#    
 #     items = [
 #             u"鸡子黄（生用，一枚）",
 #             u"鸡子黄（一枚，生用）",

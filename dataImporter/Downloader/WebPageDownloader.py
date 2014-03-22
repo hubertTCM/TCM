@@ -158,7 +158,7 @@ if __name__ == "__main__":
             
     adjustors = [ 
                  MedicalNameAdjustor(),
-                 BlankSpaceRemover([ur"(（[^（）]+）)", u"\n[^（）]+[。]\n"])
+                 BlankSpaceRemover([ur"(（[^（）]+）)", ur"\n[^（）]+[。方] *\n"])
                  ]
     config = {
                 'xpath':'//div[@class="content"]',
@@ -170,19 +170,19 @@ if __name__ == "__main__":
     convertor = HTMLToText(os.path.join(clause_folder, 'wbtb'), config)
     convertor.convert() 
     
-    
-    items = [u"半夏（六钱）                        秫米（一两） 白芍（六钱）    桂枝（四钱， 桂枝少于                                  白芍者，表里异治也）              炙甘草（一钱） 生姜（三钱） 大枣（去核，二枚）",
-             u"桂枝 （四钱，虽云                          桂枝汤），却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
-             u"桂枝          四钱，虽云 桂枝汤，      却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end"]
-
-    patterns=[ur"(（[^（）]+）)",
-              u"\n[^（）]+\n"
-              ]
-    
-    a = BlankSpaceRemover(patterns)
-    for item in items:
-        line = item
-        print a.adjust(item)
+#     
+#     items = [u"半夏（六钱）                        秫米（一两） 白芍（六钱）    桂枝（四钱， 桂枝少于                                  白芍者，表里异治也）              炙甘草（一钱） 生姜（三钱） 大枣（去核，二枚）",
+#              u"桂枝 （四钱，虽云                          桂枝汤），却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
+#              u"桂枝          四钱，虽云 桂枝汤，      却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end"]
+# 
+#     patterns=[ur"(（[^（）]+）)",
+#               u"\n[^（）]+\n"
+#               ]
+#     
+#     a = BlankSpaceRemover(patterns)
+#     for item in items:
+#         line = item
+#         print a.adjust(item)
     
     print "done"
     

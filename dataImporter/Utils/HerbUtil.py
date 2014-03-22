@@ -58,26 +58,7 @@ class ItemAdjustor:
 class BlankSpaceRemover:
     def __init__(self, patterns):
         self._patterns = patterns
-        
-#     def __adjust__(self, pattern, content):
-#         m = re.findall(pattern, content)
-#         if m:
-#             length = len(m)
-#             new_content = ""
-#             start_index = 0
-#             for i in range(length):
-#                 sub_content = m[i]
-#                 end_index = content.find(sub_content, start_index)
-#                 new_content += content[start_index:end_index]
-#                 new_content += re.sub(' +', '', sub_content)
-#                 start_index = end_index + len(sub_content)
-#                 
-#             new_content += content[start_index:]
-#                 
-#             return new_content
-#         else:
-#             return content
-        
+               
     def adjust(self, content):
         for pattern in self._patterns:
             replacer = ItemAdjustor(pattern, Utility.remove_blank_space)

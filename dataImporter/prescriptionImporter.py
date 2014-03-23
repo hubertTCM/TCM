@@ -93,7 +93,7 @@ class SinglePrescriptionImporter:
         
         alias = HerbAlias.objects.filter(name = name)
         if len(alias) > 0:
-            return Herb.objects.get(name = alias[0].standName)
+            return Herb.objects.get(name = alias[0].standardName.name)
             
         
         herb = Herb()

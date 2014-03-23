@@ -22,11 +22,70 @@ import TCM.settings
 from TCM.models import *
 setup_environ(TCM.settings)
 
-class PrescriptionHelper:
-    def __init__(self):
-        self._herbUtility = HerbUtility()
+#
+# class PrescriptionHelper:
+#     def __init__(self):
+#         self._herbUtility = HerbUtility()
+#    
+#     def does_prescription_exist(self, prescription_info):
+#         return False
+#         
+#     def is_prescription_name(self, name):
+#         known_medical_names = []
+#         known_medical_names.append(u'石膏')
+#         known_medical_names.append(u'铅丹')
+#         known_medical_names.append(u'牡丹')
+#         
+#         for medical in known_medical_names:
+#             if name.startswith(medical):
+#                 return False
+#             
+#         if self._herbUtility.is_herb(name):
+#             return False   
+#         
+#         prescription_end_tags = []
+#         prescription_end_tags.append(u'汤')
+#         prescription_end_tags.append(u'丸')
+#         prescription_end_tags.append(u'散')
+#         prescription_end_tags.append(u'膏')
+#         prescription_end_tags.append(u'丹')
+#         
+#         for item in prescription_end_tags:
+#             if (name.endswith(item)):
+#                 return True
+#         
+#         return False
+    
+class SinglePrescriptionImporter:
+    def __init__(self, prescription):
+        self._prescription = prescription
+        self._source_importer = SourceImporter()
         
-    def is_prescription_name(self, name):
+    def __is_imported__(self):
+        prescriptions = Prescription.objects.filter(name=self._prescription['name'])
+        if len(prescriptions) == 0:
+            return False
+        current_components = self._prescription['components']
+        for imported_prescription in prescriptions:
+            herb_components = HerbComponent.objects.filter(prescription=imported_prescription)
+            prescription_components = PrescriptionComponent.objects.filter(prescription=imported_prescription)
+            
+            if len(herb_components) + len(prescription_components) != len(current_components):
+                break
+            
+            is_same = True
+            
+            for item in current_components:
+                if not herb_components.filter(component=item['medical']).exists() and not prescription_components.filter(component=item['medical']).exists():
+                    is_same = False
+                    break
+            
+            if is_same:
+                return True
+            
+        return False    
+        
+    def __is_prescription_name__(self, name):
         known_medical_names = []
         known_medical_names.append(u'石膏')
         known_medical_names.append(u'铅丹')
@@ -36,9 +95,9 @@ class PrescriptionHelper:
             if name.startswith(medical):
                 return False
             
-        if name in self._herbUtility.get_all_herbs():
-            return False    
-        
+        if len(HerbAlias.objects.filter(name=name)) > 0 or len(HerbAlias.objects.filter(name=name)) > 0:
+            return False
+            
         prescription_end_tags = []
         prescription_end_tags.append(u'汤')
         prescription_end_tags.append(u'丸')
@@ -51,17 +110,11 @@ class PrescriptionHelper:
                 return True
         
         return False
-    
-class SinglePrescriptionImporter:
-    def __init__(self, prescription, prescription_helper):
-        self._prescription = prescription
-        self._source_importer = SourceImporter()
-        self._prescription_helper = prescription_helper
-        
+
     def __get_unit__(self, name):   
         if not name:
             return None
-        
+                
         unit, is_created = HerbUnit.objects.get_or_create(name = name) 
         if is_created:
             unit.save()
@@ -70,20 +123,26 @@ class SinglePrescriptionImporter:
     def __get_herb__(self, name):
         herb, is_created = Herb.objects.get_or_create(name = name)
         if is_created:
-            herb.category = 'Herb'
             herb.save()
-            return herb
-        return herb              
+        return herb           
+    
+#    TBD
+    def __get_prescription__(self, name):
+        prescription, is_created = Prescription.objects.get_or_create(name = name)
+        if is_created:
+            prescription.save()
+        return prescription
            
 #     TBD    
     def __import_composition__(self, db_prescription, component):
         try:
             medical_name = component['medical']
-            if not self._prescription_helper.is_prescription_name(medical_name):
+            if not self.__is_prescription_name__(medical_name):
                 db_composition = HerbComponent()
                 db_composition.component = self.__get_herb__(medical_name)
             else:
                 db_composition = PrescriptionComponent()
+                db_composition.comment = self.__get_prescription__(medical_name)
                 
             db_composition.prescription = db_prescription
             db_composition.quantity = component['quantity']
@@ -97,26 +156,30 @@ class SinglePrescriptionImporter:
 #   TBD
     def do_import(self):
         try:
-            db_prescription = Prescription()    
+            if self.__is_imported__():
+                return
+            
+            #db_prescription = Prescription()    
+            db_prescription = self.__get_prescription__(self._prescription['name'])
             db_prescription.category = 'Prescription'  
             db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
-            db_prescription.name = self._prescription['name']
+            #db_prescription.name = self._prescription['name']
             db_prescription.comment = self._prescription['comment']        
             db_prescription.save()
             
             for component in self._prescription['components']:
-                self.__import_composition__(db_prescription, component)            
+                self.__import_composition__(db_prescription, component)   
+                         
         except Exception,ex:
                 print Exception,":",ex
     
 class PrescriptionsImporter:
     def __init__(self, prescriptions):
         self._prescriptions = prescriptions
-        self._prescription_helper = PrescriptionHelper()
     
     def do_import(self):
         for prescription in self._prescriptions:
-            importer = SinglePrescriptionImporter(prescription, self._prescription_helper)
+            importer = SinglePrescriptionImporter(prescription)
             importer.do_import()
             
 if __name__ == "__main__":

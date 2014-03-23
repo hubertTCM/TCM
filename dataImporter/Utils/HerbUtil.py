@@ -24,12 +24,13 @@ class HerbUtility:
         self._herbs=[] 
         self._herbs.extend([herb.name for herb in Herb.objects.all()])
         self._herbs.extend([herb.name for herb in HerbAlias.objects.all()])
-        
+                
     def get_all_herbs(self):
         return self._herbs
     
     def is_herb(self, name):
         return name in self.get_all_herbs()
+    
 
 class ItemAdjustor:
     def __init__(self, pattern, to_text_fetcher):

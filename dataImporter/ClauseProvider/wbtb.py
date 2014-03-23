@@ -260,10 +260,7 @@ class wbtb_provider:
                 clauses.extend(items)
         return clauses
                 
-if __name__ == "__main__":
-    c = SingleComponentParser_wbtb(ur"麦冬（不去心，二钱）").get_component()
-    print Utility.convert_dict_to_string(c)
-    
+if __name__ == "__main__":   
     source_folder = os.path.dirname(__file__)
     source_folder = os.path.join(source_folder, 'wbtb')   
     provider = wbtb_provider(source_folder)

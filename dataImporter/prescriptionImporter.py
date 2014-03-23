@@ -22,40 +22,6 @@ import TCM.settings
 from TCM.models import *
 setup_environ(TCM.settings)
 
-#
-# class PrescriptionHelper:
-#     def __init__(self):
-#         self._herbUtility = HerbUtility()
-#    
-#     def does_prescription_exist(self, prescription_info):
-#         return False
-#         
-#     def is_prescription_name(self, name):
-#         known_medical_names = []
-#         known_medical_names.append(u'石膏')
-#         known_medical_names.append(u'铅丹')
-#         known_medical_names.append(u'牡丹')
-#         
-#         for medical in known_medical_names:
-#             if name.startswith(medical):
-#                 return False
-#             
-#         if self._herbUtility.is_herb(name):
-#             return False   
-#         
-#         prescription_end_tags = []
-#         prescription_end_tags.append(u'汤')
-#         prescription_end_tags.append(u'丸')
-#         prescription_end_tags.append(u'散')
-#         prescription_end_tags.append(u'膏')
-#         prescription_end_tags.append(u'丹')
-#         
-#         for item in prescription_end_tags:
-#             if (name.endswith(item)):
-#                 return True
-#         
-#         return False
-    
 class SinglePrescriptionImporter:
     def __init__(self, prescription):
         self._prescription = prescription
@@ -121,10 +87,19 @@ class SinglePrescriptionImporter:
         return unit
         
     def __get_herb__(self, name):
-        herb, is_created = Herb.objects.get_or_create(name = name)
-        if is_created:
-            herb.save()
-        return herb           
+        herbs = Herb.objects.filter(name = name)
+        if len(herbs) > 0:
+            return herbs[0]
+        
+        alias = HerbAlias.objects.filter(name = name)
+        if len(alias) > 0:
+            return Herb.objects.get(name = alias[0].standName)
+            
+        
+        herb = Herb()
+        herb.name = name
+        herb.save()
+        return herb
     
 #    TBD
     def __get_prescription__(self, name):
@@ -159,7 +134,10 @@ class SinglePrescriptionImporter:
             if self.__is_imported__():
                 return
             
-            #db_prescription = Prescription()    
+            if self._prescription['name'] == u"加减复脉汤":
+                print Utility.convert_dict_to_string(self._prescription)
+                
+             
             db_prescription = self.__get_prescription__(self._prescription['name'])
             db_prescription.category = 'Prescription'  
             db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)

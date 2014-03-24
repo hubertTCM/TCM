@@ -64,7 +64,6 @@ class BlankSpaceRemover:
         for pattern in self._patterns:
             replacer = ItemAdjustor(pattern, Utility.remove_blank_space)
             content = replacer.adjust(content)
-            #content = self.__adjust__(pattern, content)
         return content
 
 class ItemReplaceAdjustor:

@@ -123,6 +123,7 @@ class ItemDownloader:
         index_file.close()
         
 if __name__ == "__main__":
+    print "start"
     parent = os.path.dirname(__file__)
     consiliar_folder = os.path.abspath(os.path.join(parent, u"..\ConsiliaProvider"))
     yz_config = {
@@ -158,7 +159,7 @@ if __name__ == "__main__":
             
     adjustors = [ 
                  MedicalNameAdjustor(),
-                 BlankSpaceRemover([ur"(（[^（）]+）)", ur"\n[^（）]+[。方] ( )*\n"])
+                 BlankSpaceRemover([ur"(（[^（）\n]+）)", ur"\n[^（）\n]+[。方] *\n"])
                  ]
     config = {
                 'xpath':'//div[@class="content"]',
@@ -170,15 +171,18 @@ if __name__ == "__main__":
     convertor = HTMLToText(os.path.join(clause_folder, 'wbtb'), config)
     convertor.convert() 
     
-#     
-#     items = [u"半夏（六钱）                        秫米（一两） 白芍（六钱）    桂枝（四钱， 桂枝少于                                  白芍者，表里异治也）              炙甘草（一钱） 生姜（三钱） 大枣（去核，二枚）",
-#              u"桂枝 （四钱，虽云                          桂枝汤），却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
-#              u"桂枝          四钱，虽云 桂枝汤，      却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end"]
-# 
-#     patterns=[ur"(（[^（）]+）)",
-#               u"\n[^（）]+\n"
+#      
+#     items = [
+#              ur"半夏（六钱）                        秫米（一两） 白芍（六钱）    桂枝（四钱， 桂枝少于                                  白芍者，表里异治也）              炙甘草（一钱） 生姜（三钱） 大枣（去核，二枚）",
+#              ur"桂枝 （四钱，虽云                          桂枝汤），却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
+#              ur"桂枝          四钱，虽云 桂枝汤，      却用小建中汤法。 桂枝少于 白芍者，表里异治也                     end",
+#             ur"绵茵陈  白芷 北  秦皮  茯苓皮  黄柏  藿香"]
+#  
+#     patterns=[
+#               ur"(（[^（）]+）)", 
+#               ur"[^（）]+[。方]"
 #               ]
-#     
+#      
 #     a = BlankSpaceRemover(patterns)
 #     for item in items:
 #         line = item

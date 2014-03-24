@@ -51,16 +51,16 @@ class SingleClauseImporter:
         return come_from
     
     def do_import(self):
-        clause = Clause()      
-        clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
-        clause.content = self._prescription_data[u'content']
-        clause.index = self._prescription_data[u'index']
-        clause.save()
+#         clause = Clause()      
+#         clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
+#         clause.content = self._prescription_data[u'content']
+#         clause.index = self._prescription_data[u'index']
+#         clause.save()
         
         prescriptions_importer = PrescriptionsImporter(self._prescription_data['prescriptions'])
         prescriptions_importer.do_import()
         
-        self.__import_category__(clause)
+#         self.__import_category__(clause)
 
 
 class Importer:

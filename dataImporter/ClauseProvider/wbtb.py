@@ -172,7 +172,7 @@ class PrescriptionParser_wbtb:
             if info:   
                 if current_prescription and len(current_prescription['components'])>0:                  
                     prescriptions.append(current_prescription)                        
-                current_prescription = {'components':[]}  
+                current_prescription = {'components':[], 'comment':None}  
                 current_prescription.update(info)             
                 continue
             

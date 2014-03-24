@@ -26,6 +26,7 @@ class SinglePrescriptionImporter:
     def __init__(self, prescription):
         self._prescription = prescription
         self._source_importer = SourceImporter()
+        self._db_prescription_without_composition = None
         
     def __is_imported__(self):
         prescriptions = Prescription.objects.filter(name=self._prescription['name'])
@@ -36,7 +37,12 @@ class SinglePrescriptionImporter:
             herb_components = HerbComponent.objects.filter(prescription=imported_prescription)
             prescription_components = PrescriptionComponent.objects.filter(prescription=imported_prescription)
             
-            if len(herb_components) + len(prescription_components) != len(current_components):
+            imported_components_count = len(herb_components) + len(prescription_components)
+            
+            if imported_components_count == 0:
+                self._db_prescription_without_composition = imported_prescription
+            
+            if imported_components_count != len(current_components):
                 break
             
             is_same = True
@@ -101,14 +107,14 @@ class SinglePrescriptionImporter:
         herb.save()
         return herb
     
-#    TBD
     def __get_prescription__(self, name):
         prescription, is_created = Prescription.objects.get_or_create(name = name)
         if is_created:
+            prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
             prescription.save()
         return prescription
            
-#     TBD    
+  
     def __import_composition__(self, db_prescription, component):
         try:
             medical_name = component['medical']
@@ -117,7 +123,7 @@ class SinglePrescriptionImporter:
                 db_composition.component = self.__get_herb__(medical_name)
             else:
                 db_composition = PrescriptionComponent()
-                db_composition.comment = self.__get_prescription__(medical_name)
+                db_composition.component = self.__get_prescription__(medical_name)
                 
             db_composition.prescription = db_prescription
             db_composition.quantity = component['quantity']
@@ -128,20 +134,18 @@ class SinglePrescriptionImporter:
         except Exception,ex:
             print Exception,":",ex, "prescription: ",db_prescription.name, " medical: ",component['medical'], " quantity", component['quantity'], " unit", component['unit']
     
-#   TBD
     def do_import(self):
         try:
             if self.__is_imported__():
                 return
-            
-            if self._prescription['name'] == u"加减复脉汤":
-                print Utility.convert_dict_to_string(self._prescription)
-                
-             
-            db_prescription = self.__get_prescription__(self._prescription['name'])
+
+            if self._db_prescription_without_composition:
+                db_prescription = self._db_prescription_without_composition
+            else:
+                db_prescription = Prescription()
+                             
             db_prescription.category = 'Prescription'  
             db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
-            #db_prescription.name = self._prescription['name']
             db_prescription.comment = self._prescription['comment']        
             db_prescription.save()
             

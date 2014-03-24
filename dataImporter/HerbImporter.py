@@ -4,6 +4,7 @@ import sys
 from django.core.management import setup_environ
 
 from HerbProvider.HerbAliasProvider import HerbAliasProvider
+from dataImporter.Utils.Utility import *
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -34,7 +35,7 @@ class KnownAliasProvider:
                 (ur"北秦皮", ur"秦皮"),
                 (ur"生黄柏", ur"黄柏"),
                 (ur"公丁香", ur"丁香"),
-                (ur"倭 硫黄", ur"硫黄")
+                (ur"倭硫黄", ur"硫黄")
                  ]
         return items
 
@@ -44,12 +45,14 @@ class AliasImporter:
         self._providers.append(HerbAliasProvider())
         self._providers.append(KnownAliasProvider())
         
-    def __import__(self, alias, standard_name):   
+    def __import__(self, alias, standard_name):
+        alias = Utility.remove_blank_space(alias)
+        standard_name = Utility.remove_blank_space(standard_name)   
         items = HerbAlias.objects.filter(name = alias)
         if len(items) > 0:
-            print alias , " is imported"
             return   
         
+        print "importing " + alias
         herb, isCreated = Herb.objects.get_or_create(name=standard_name)
         if (isCreated):
             herb.save()  

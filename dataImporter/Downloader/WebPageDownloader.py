@@ -158,7 +158,7 @@ if __name__ == "__main__":
             
     adjustors = [ 
                  MedicalNameAdjustor(),
-                 BlankSpaceRemover([ur"(（[^（）]+）)", ur"\n[^（）]+[。方] *\n"])
+                 BlankSpaceRemover([ur"(（[^（）]+）)", ur"\n[^（）]+[。方] ( )*\n"])
                  ]
     config = {
                 'xpath':'//div[@class="content"]',

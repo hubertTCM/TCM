@@ -103,7 +103,6 @@ class PrescriptionParser_wbtb:
         for pattern in exclude_patterns:
             m = re.findall(pattern, text)
             if len(m) >0:
-                print m[0]
                 return False
         return True       
         
@@ -128,7 +127,7 @@ class PrescriptionParser_wbtb:
                 
                 print Utility.convert_dict_to_string(component)
 
-        #components = self._adjustor.adjust(components)
+        components = self._adjustor.adjust(components)
         
         if (len(components) == 0):
             print "*failed to get components from: " + text + '\n'
@@ -160,7 +159,7 @@ class PrescriptionParser_wbtb:
         if method:
             method = Utility.remove_blank_space(method)
         info = {'name':name, 'method':method}
-        print "**" + Utility.convert_dict_to_string(info)
+#         print "**" + Utility.convert_dict_to_string(info)
         return info
         
     def get_prescriptions(self):
@@ -225,13 +224,12 @@ class wbtb_provider:
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : self._come_from}
     
     def __is_start_line_of_clause__(self, line):
-        #matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
         matches = re.findall(ur"\s*[一二三四五六七八九十百]{1,3}\u3001", line)
         return len(matches) > 0 and line.strip().index(u'\u3001') < 4
         
     def __get_clauses_from__(self, file_name): 
         clauses = []
-        print file_name
+#         print file_name
         source_file = codecs.open(file_name, 'r', 'utf-8')
         clause_lines = []
         index = 0

@@ -35,7 +35,9 @@ class KnownAliasProvider:
                 (ur"北秦皮", ur"秦皮"),
                 (ur"生黄柏", ur"黄柏"),
                 (ur"公丁香", ur"丁香"),
-                (ur"倭硫黄", ur"硫黄")
+                (ur"倭硫黄", ur"硫黄"),
+                (ur"生茅术",ur"苍术"),
+                (ur"木香汁", ur"木香")
                  ]
         return items
 

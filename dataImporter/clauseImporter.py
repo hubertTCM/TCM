@@ -66,8 +66,8 @@ class SingleClauseImporter:
 class Importer:
     def __init__(self):
         self._providers = []
-        self._providers.append(FebribleDiseaseProvider())
-        self._providers.append(GoldenChamberProvider())
+#         self._providers.append(FebribleDiseaseProvider())
+#         self._providers.append(GoldenChamberProvider())
         self._providers.append(wbtb_provider(None))
     
     def import_all_clauses(self):
@@ -82,6 +82,23 @@ class Importer:
     
 
 if __name__ == "__main__":
-    importer = Importer()
-    importer.import_all_clauses()
+    def check_unimported_herb():
+        importer = Importer()
+        unimported_herbs = []
+        for source_provider in importer._providers:
+            for clause in source_provider.get_all_clauses():
+                for prescription in clause['prescriptions']:
+                    for component in prescription['components']:
+                        herb_name = component['medical']
+                        if herb_name in unimported_herbs:
+                            continue
+                        
+                        if len(Herb.objects.filter(name = herb_name)) == 0 and len(HerbAlias.objects.filter(name = herb_name)) == 0:
+                            unimported_herbs.append(herb_name)
+                            print "!!!!!!!!!!!!" + herb_name
+        
+    check_unimported_herb()
+    
+#     importer = Importer()
+#     importer.import_all_clauses()
     print "done"

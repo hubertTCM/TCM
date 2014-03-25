@@ -94,11 +94,13 @@ class PrescriptionParser_wbtb:
         self._adjustor = ComponentsAdjustor() 
         
     def __is_component_info__(self, text):
+        
         #水八杯，先煮
         if text.find(u"。") >=0 and text.find("（") < 0:
             return False
         exclude_patterns = [
-                            ur"[^（）]*水[一二三四五六七八九十半百]+[杯升]"
+                            ur"[^（）]*水[一二三四五六七八九十半百]+[杯升]", 
+                            ur" *(按|方论)：",
                             ]
         for pattern in exclude_patterns:
             m = re.findall(pattern, text)

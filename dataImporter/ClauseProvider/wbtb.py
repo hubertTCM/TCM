@@ -124,8 +124,6 @@ class PrescriptionParser_wbtb:
                 component_parser = SingleComponentParser_wbtb(item)
                 component = component_parser.get_component()
                 components.append(component)
-                
-                print Utility.convert_dict_to_string(component)
 
         components = self._adjustor.adjust(components)
         
@@ -210,7 +208,7 @@ class wbtb_provider:
 
         index_file.close()
 
-    def __create_caluse__(self, index, item_contents):
+    def __create_caluse__(self, index, item_contents, file_name):
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
         content = ''
         if len(items) > 0:
@@ -219,7 +217,7 @@ class wbtb_provider:
         parser = PrescriptionParser_wbtb(items) 
         prescriptions = parser.get_prescriptions() 
         for prescription in prescriptions:
-            prescription.update({'comeFrom' : self._come_from})          
+            prescription.update({'comeFrom' : self._come_from, '_debug_source':file_name })          
             
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : self._come_from}
     
@@ -229,14 +227,13 @@ class wbtb_provider:
         
     def __get_clauses_from__(self, file_name): 
         clauses = []
-#         print file_name
         source_file = codecs.open(file_name, 'r', 'utf-8')
         clause_lines = []
         index = 0
         for line in source_file:
             if self.__is_start_line_of_clause__(line):
                 if (len(clause_lines) > 0):
-                    clauses.append(self.__create_caluse__(index, clause_lines))
+                    clauses.append(self.__create_caluse__(index, clause_lines, file_name))
                 index += 1
                 clause_lines = []                
                 clause_lines.append(line.strip())
@@ -246,7 +243,7 @@ class wbtb_provider:
         source_file.close
         
         if len(clause_lines) > 0:
-            clauses.append(self.__create_caluse__(index, clause_lines))
+            clauses.append(self.__create_caluse__(index, clause_lines, file_name))
         
         return clauses
             

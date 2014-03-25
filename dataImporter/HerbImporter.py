@@ -37,7 +37,9 @@ class KnownAliasProvider:
                 (ur"公丁香", ur"丁香"),
                 (ur"倭硫黄", ur"硫黄"),
                 (ur"生茅术",ur"苍术"),
-                (ur"木香汁", ur"木香")
+                (ur"木香汁", ur"木香"),
+                (ur"生 香附", ur"香附"),
+                (ur"舶上 硫黄", ur"硫黄")
                  ]
         return items
 

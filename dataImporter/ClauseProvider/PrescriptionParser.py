@@ -11,131 +11,67 @@ def append_ancestors_to_system_path(levels):
         
 append_ancestors_to_system_path(3)
 
+from ComponentAdjustor import *
 from dataImporter.Utils.Utility import *
 
-class SingleComponentParser:
+#TBD
+class SingleComponentParser_jf:
     def __init__(self, text):
-        self._source_text = text.replace(ur'\u3000',' ').strip()
+        self._source_text = text
+        self._herb = text
+        self._quantity_unit = None
+        self._comments = None 
         
-        self._known_medical = [] 
-        self._known_medical.append(u'百合')
-        self._known_medical.append(u'半夏') 
-        self._known_medical.append(u'五味子')   
-        self._known_medical.append(u'五味')  
-        self._known_medical.append(u'五灵脂')
-        self._known_medical.append(u'三棱')
-        self._known_medical.append(u'京 三棱')
-        self._known_medical.append(u'庶（虫底）虫')
-        
-        #self._comment_pattern = ur"\uff08(\W+)\uff09"
-        self._comment_pattern = ur"[\uff08(](\W+)[)\uff09]" #check ( in both of Chinese and English.  
-    
-    def __adjust_medical_name__(self, medical_name):
-        text_should_remove = []
-        text_should_remove.append(u'各等分')
-        text_should_remove.append(u'等分')
-        for item in text_should_remove:
-            if medical_name.endswith(item):
-                medical_name = medical_name[:len(medical_name)-len(item)]
-                break     
-        quantity_pattern = u"[一二三四五六七八九十]"     
-        return re.split(quantity_pattern, medical_name)[0]
-    
-    def __split_with_comment_tag__(self, text):
-        return filter(lambda(x):len(x)>0, [item.strip() for item in re.split(self._comment_pattern, text)])
-    
-    def __adjust_quantity__(self, quantity):
-        if not quantity or len(str(quantity).strip()) == 0:
-            return None              
+    def __parse_quantity_comment__(self, text):
+        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，]+)"
+        successed = False
+        # quantity（comment）
+        m = re.compile(quantity_unit_pattern + ur"[^（）]*（([^（）]+)）").match(text)
+        if m:
+            self._quantity_unit = m.group(1).strip()
+            self._comments = m.group(2).strip()
+            successed = True
             
-        return quantity
-    
-    def __adjst_unit__(self, unit):
-        if not unit or len(str(unit).strip()) == 0:
-            return None  
-
-        if len(self.__split_with_comment_tag__(unit)) > 1:
-            return None 
-        
-        quantity_pattern = u"[一二三四五六七八九十百]"
-        if len(re.split(quantity_pattern, unit)) > 1:            
-            return None
-        return unit
-            
-    def __adjust_quantity_unit__(self, quantity, unit):
-        if len(quantity) > 0:
-            quantity = Utility.convert_number(quantity)
-            
-        if len(unit) > 0 and unit[-1] == "半": #生姜一两半
-            unit = unit[0:len(unit) - 1]
-            quantity += 0.5
-                            
-        return self.__adjust_quantity__(quantity), self.__adjst_unit__(unit)
-    
-    def __find_quantity__(self, item):
-        quantity_pattern =  ur"[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6\u5341\u534a百]{1,3}"
-        return re.findall(quantity_pattern, item)
-
-    def __parse_quantity_unit__(self, item):
-        quantity = None
-        unit = None
-        matches = self.__find_quantity__(item)
-        if (len(matches) > 0): 
-            quantity = matches[0]
-            unit = item[item.rindex(quantity) + len(quantity):]                                
-            quantity, unit = self.__adjust_quantity_unit__(quantity, unit)                            
-        return quantity, unit
-
-    def __parse_medical_quantity_unit__(self, item):
-        medical = item
-        quantity = None
-        unit = None        
-        matches = self.__find_quantity__(item)
-        if len(matches) > 0: #format: 蜀椒三分
-            quantity = matches[0]            
-            medical = item[0:item.rindex(quantity)].strip()            
-            unit = item[item.rindex(quantity) + len(quantity):]                        
-            quantity, unit = self.__adjust_quantity_unit__(quantity, unit)          
-            
-        return medical, quantity, unit
-
-    def get_component(self): 
-        medical = ''       
-        quantity = None
-        unit = None
-        comments = ''
-                    
-        for name in self._known_medical: #庶（虫底）虫二十枚（熬，去足）
-            if self._source_text.startswith(name):
-                medical = name
-                items =self.__split_with_comment_tag__(self._source_text[len(name):])#filter(lambda(x):len(x)>0, [item.strip() for item in re.split(comment_pattern, self._source_text[len(name):])])
-                if (len(items)==2):
-                    comments = items[1]
-                if len(items) > 0:    
-                    quantity, unit = self.__parse_quantity_unit__(items[0])                    
-                return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
+        if not successed:#（comment）quantity
+            m = re.compile(ur"（([^（）]+)）" + quantity_unit_pattern).match(text)
+            if m:
+                self._quantity_unit = m.group(2).strip()
+                self._comments = m.group(1).strip()
+                successed = True
                 
-        #items =filter(lambda(x):len(x)>0, [item.strip() for item in re.split(comment_pattern, self._source_text)])
-        items =self.__split_with_comment_tag__(self._source_text)
-        if (len(items) == 1): #蜀椒  or 蜀椒三分
-            item = items[0]
-            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
-            
-        if (len(items) == 2): #蜀椒三分（去汗） or 蜀椒（去汗）
-            item = items[0]
-            comments = items[1]
-            medical, quantity, unit = self.__parse_medical_quantity_unit__(item)
-            
-        if (len(items) == 3): #蜀椒（去汗）三分 or 牡蛎（熬）等分
-            medical = items[0]
-            comments = items[1]
-            item = items[2]
-            quantity, unit = self.__parse_quantity_unit__(item)        
+        if not successed:#quantity
+            m = re.compile(quantity_unit_pattern).match(text)
+            if m:
+                successed = True
+                self._quantity_unit = m.group(1).strip()
+                successed = True
+                
+        if not successed:#comment
+            self._comments = text.strip()
+    
+    def __parse_normal_medical_name__(self):
+        pattern = ur"([^（）一二三四五六七八九十半百]+)(\W*（[^（）]+）\W*)"
+        m = re.compile(pattern).match(self._source_text)
+        if m:
+            self._herb = m.group(1).strip()
+            self.__parse_quantity_comment__(m.group(2).strip())
+
+    def get_component(self):   
+        m = MedicalNameParser(self._source_text)
+        herb, other = m.split_with_medical_name()
+        if herb:
+            self._herb = herb
+            self.__parse_quantity_comment__(other)
+        else:
+            self.__parse_normal_medical_name__()
         
-        medical = self.__adjust_medical_name__(medical)
-        
-        return {'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
-      
+        quantity, unit = (None, None)
+        if self._quantity_unit:
+            quantity_parser = QuantityParser(self._quantity_unit)
+            quantity, unit = quantity_parser.parse()
+         
+        return {'medical': self._herb, 'quantity': quantity, 'unit': unit, 'comments': self._comments} 
+    
 class PrescriptionParser:
     def __init__(self, text, prescription_name_end_tag):
         self._source_text = text  
@@ -189,7 +125,7 @@ class PrescriptionParser:
         for item in items:
             item = item.strip()
             if len(item) > 0:
-                component_parser = SingleComponentParser(item)
+                component_parser = SingleComponentParser_jf(item)
                 components.append(component_parser.get_component())
 
         #防风　桔梗　桂枝　人参　甘草各一两
@@ -287,7 +223,7 @@ if __name__ == "__main__":
     
     for item in texts:
         print item + " "
-        sp = SingleComponentParser(item)
+        sp = SingleComponentParser_jf(item)
         component = sp.get_component()
         print Utility.convert_dict_to_string(component)
         

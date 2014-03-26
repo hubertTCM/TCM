@@ -28,7 +28,7 @@ class MedicalNameParser:
         self._medical_names.append(u'五味')  
         self._medical_names.append(u'五灵脂')
         self._medical_names.append(u'三棱')
-        self._medical_names.append(u'京 三棱')
+        self._medical_names.append(u'京三棱')
         self._medical_names.append(u'庶（虫底）虫')
         
     def split_with_medical_name(self):
@@ -84,6 +84,12 @@ class QuantityParser:
         if len(pairs) == 1:
             str_quantity, self._unit = pairs[0]
             self._quantity = Utility.convert_number(str_quantity)
+        if len(pairs) == 2:
+            str_quantity, self._unit = pairs[0]
+            self._quantity = Utility.convert_number(str_quantity)
+            if (not pairs[1][1] or len(pairs[1][1]) == 0 ) and pairs[1][0] == u'半':
+                self._quantity += 0.5
+            
         
         return self._quantity, self._unit       
      
@@ -111,8 +117,9 @@ class QuantityAdjustor:
     
 if __name__ == "__main__":
     items = [
-             u"一一二枚",
-             u"一二钱五分",
+              u"一一二枚",
+              u"一二钱五分",
+             u"三分半"
              ]
     for item in items:
         p =QuantityParser(item)

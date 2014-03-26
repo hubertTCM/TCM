@@ -23,7 +23,7 @@ class SingleComponentParser_jf:
         self._comments = None 
         
     def __parse_quantity_comment__(self, text):
-        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，]+)"
+        quantity_unit_pattern = ur"(各*[一二三四五六七八九十半百]+[^，]+)"
         successed = False
         # quantity（comment）
         m = re.compile(quantity_unit_pattern + ur"[^（）]*（([^（）]+)）").match(text)
@@ -50,7 +50,7 @@ class SingleComponentParser_jf:
             self._comments = text.strip()
     
     def __parse_normal_medical_name__(self):
-        pattern = ur"([^（）一二三四五六七八九十半百]+)(\W*（[^（）]+）\W*)"
+        pattern = ur"([^（）一二三四五六七八九十半百]+)(\W*)"
         m = re.compile(pattern).match(self._source_text)
         if m:
             self._herb = m.group(1).strip()

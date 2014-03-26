@@ -25,6 +25,7 @@ setup_environ(TCM.settings)
 class KnownAliasProvider:
     def get_all_alias_pair(self):
         items = [(ur"飞滑石", ur"滑石"),
+                 (ur"大附子", ur"附子"),
                 (ur"生附子", ur"附子"),
                 (ur"生石膏", ur"石膏"),
                 (ur"生白芍", ur"白芍"),
@@ -34,13 +35,14 @@ class KnownAliasProvider:
                 (ur"竹叶心", ur"竹叶"),
                 (ur"北秦皮", ur"秦皮"),
                 (ur"生黄柏", ur"黄柏"),
+                (ur"黄檗", ur"黄柏"),
                 (ur"公丁香", ur"丁香"),
                 (ur"倭硫黄", ur"硫黄"),
                 (ur"生茅术",ur"苍术"),
                 (ur"木香汁", ur"木香"),
                 (ur"生 香附", ur"香附"),
-                (ur"舶上 硫黄", ur"硫黄"),
-                (ur"云  茯苓", ur"茯苓"),
+                (ur"舶上硫黄", ur"硫黄"),
+                (ur"云 茯苓", ur"茯苓"),
                 (ur"茯苓块", ur"茯苓"),
                 (ur"广皮", ur"陈皮"),
                 (ur"橘皮", ur"陈皮"),
@@ -54,7 +56,11 @@ class KnownAliasProvider:
                 (ur"乌扇 ", ur"射干"),
                 (ur"苁蓉", ur"肉苁蓉"),
                 (ur"香豆豉", ur"豆豉"),
-                # may lost information 
+                (ur"肥栀子", ur"栀子"),
+                # may lost information
+                (ur"生竹茹", "竹茹"),
+                (ur"干苏叶", "苏叶"),
+                ("生地黄汁", "生地"), 
                 (ur"黑山栀", "栀子"),
                 (ur"楂炭", ur"山楂"),
                 (ur"蒲黄炭", ur"蒲黄"),

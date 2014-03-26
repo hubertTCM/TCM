@@ -33,7 +33,7 @@ class SingleComponentParser_wbtb:
         self._comments = None
    
     def __parse_quantity_comment__(self, text):   
-        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，])"
+        quantity_unit_pattern = ur"(各*[一二三四五六七八九十半百]+[^，])"
         successed = False
         # （quantity, comment）
         m = re.compile(ur"（" + quantity_unit_pattern + ur"[，]([^（）]+)）").match(text)

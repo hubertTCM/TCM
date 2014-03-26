@@ -13,7 +13,6 @@ append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.Utility import *
 
-
 #TBD
 class MedicalNameParser: 
     # special medical names, like medical name with quantity
@@ -30,6 +29,7 @@ class MedicalNameParser:
         self._medical_names.append(u'三棱')
         self._medical_names.append(u'京三棱')
         self._medical_names.append(u'庶（虫底）虫')
+        self._medical_names.append(u'太一禹余粮')
         
     def split_with_medical_name(self):
         medical_name = None
@@ -43,17 +43,6 @@ class MedicalNameParser:
                 break
             
         return medical_name, other_part
-       
-#     def adjust(self):
-#         text_should_remove = []
-#         text_should_remove.append(u'各等分')
-#         text_should_remove.append(u'等分')
-#         for item in text_should_remove:
-#             if self._medical_name.endswith(item):
-#                 self._medical_name = self._medical_name[:len(self._medical_name)-len(item)]
-#                 break
-#         
-#         return self._medical_name   
 
 class QuantityParser:
     def __init__(self, text):
@@ -119,7 +108,7 @@ if __name__ == "__main__":
     items = [
               u"一一二枚",
               u"一二钱五分",
-             u"三分半"
+              u"三分半"
              ]
     for item in items:
         p =QuantityParser(item)

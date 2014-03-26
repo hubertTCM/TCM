@@ -71,7 +71,7 @@ class SingleComponentParser_wbtb:
             self.__parse_quantity_comment__(m.group(2))
             
     def get_component(self):   
-        m = MedicalNameAdjustor(self._source_text)
+        m = MedicalNameParser(self._source_text)
         herb, other = m.split_with_medical_name()
         if herb:
             self._herb = herb
@@ -85,22 +85,43 @@ class SingleComponentParser_wbtb:
             quantity, unit = quantity_parser.parse()
          
         return {'medical': self._herb, 'quantity': quantity, 'unit': unit, 'comments': self._comments} 
-        #return {'medical':self._herb, 'comment':self._comment, 'quantity_unit':self._quantity_unit}  
-    
+        
+class HerbAdjustor_wbtb:
+    def __init__(self):
+        self._map = {}
+        self._map = {ur"降真香":u"降香", 
+                     ur"益母膏":u"益母草",
+                     ur"薏苡":ur"薏苡仁"}
+        
+    def __get_herb_name__(self, name):
+        if name in self._map:
+            return self._map[name]
+        
+        return name
+        
+    def adjust(self, components):
+        for component in components:
+            component['medical'] = self.__get_herb_name__(component['medical'])
+        return components
 
 class PrescriptionParser_wbtb:
-    def __init__(self, clause_lines):
-        self._clause_lines = clause_lines  
-        self._adjustor = ComponentsAdjustor() 
+    def __init__(self, clause_lines, adjustors):
+        self._clause_lines = clause_lines
+        self._adjustors = [] 
+        self._adjustors.extend(adjustors) 
+        #self._adjustor = QuantityAdjustor() 
         
     def __is_component_info__(self, text):
+        exclude_lines = [u"益胃汤（见中焦篇）"]
+        for item in exclude_lines:
+            if item == text:
+                return False
         
-        #水八杯，先煮
         if text.find(u"。") >=0 and text.find("（") < 0:
             return False
         exclude_patterns = [
-                            ur"[^（）]*水[一二三四五六七八九十半百]+[杯升]", 
-                            ur" *(按|方论)：",
+                            ur"[^（）]*水[一二三四五六七八九十半百]+[杯升]", #水八杯，先煮
+                            ur" *(按：|方论：|白虎法、)",
                             ]
         for pattern in exclude_patterns:
             m = re.findall(pattern, text)
@@ -127,7 +148,8 @@ class PrescriptionParser_wbtb:
                 component = component_parser.get_component()
                 components.append(component)
 
-        components = self._adjustor.adjust(components)
+        for adjustor in self._adjustors:
+            components = adjustor.adjust(components)
         
         if (len(components) == 0):
             print "*failed to get components from: " + text + '\n'
@@ -216,7 +238,7 @@ class wbtb_provider:
         if len(items) > 0:
             content = '\n'.join(items)
         items = content.split('\n')     
-        parser = PrescriptionParser_wbtb(items) 
+        parser = PrescriptionParser_wbtb(items, [QuantityAdjustor(), HerbAdjustor_wbtb()]) 
         prescriptions = parser.get_prescriptions() 
         for prescription in prescriptions:
             prescription.update({'comeFrom' : self._come_from, '_debug_source':file_name })          

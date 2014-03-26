@@ -15,7 +15,7 @@ from dataImporter.Utils.Utility import *
 
 
 #TBD
-class MedicalNameAdjustor: 
+class MedicalNameParser: 
     # special medical names, like medical name with quantity
     def __init__(self, text):
         self._source_text = text
@@ -44,16 +44,16 @@ class MedicalNameAdjustor:
             
         return medical_name, other_part
        
-    def adjust(self):
-        text_should_remove = []
-        text_should_remove.append(u'各等分')
-        text_should_remove.append(u'等分')
-        for item in text_should_remove:
-            if self._medical_name.endswith(item):
-                self._medical_name = self._medical_name[:len(self._medical_name)-len(item)]
-                break
-        
-        return self._medical_name   
+#     def adjust(self):
+#         text_should_remove = []
+#         text_should_remove.append(u'各等分')
+#         text_should_remove.append(u'等分')
+#         for item in text_should_remove:
+#             if self._medical_name.endswith(item):
+#                 self._medical_name = self._medical_name[:len(self._medical_name)-len(item)]
+#                 break
+#         
+#         return self._medical_name   
 
 class QuantityParser:
     def __init__(self, text):
@@ -85,9 +85,9 @@ class QuantityParser:
             str_quantity, self._unit = pairs[0]
             self._quantity = Utility.convert_number(str_quantity)
         
-        return self._quantity, self._unit   
+        return self._quantity, self._unit       
      
-class ComponentsAdjustor:    
+class QuantityAdjustor:    
     def adjust(self, components):
         components.reverse() #防风　桔梗　桂枝　人参　甘草各一两
         previous_quantity = None

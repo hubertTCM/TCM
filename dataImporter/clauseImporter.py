@@ -66,15 +66,14 @@ class SingleClauseImporter:
 class Importer:
     def __init__(self):
         self._providers = []
-#         self._providers.append(FebribleDiseaseProvider())
-#         self._providers.append(GoldenChamberProvider())
+        self._providers.append(FebribleDiseaseProvider())
+        self._providers.append(GoldenChamberProvider())
         self._providers.append(wbtb_provider(None))
     
     def import_all_clauses(self):
         for source_provider in self._providers:
             for clause in source_provider.get_all_clauses():
                 try:
-                    #print "importing " + clause[u'content']
                     importer = SingleClauseImporter(clause)
                     importer.do_import()                
                 except Exception,ex:

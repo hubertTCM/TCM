@@ -52,7 +52,10 @@ class KnownAliasProvider:
                 (ur"青木香 ", ur"木香"),
                 (ur"白粳米 ", ur"粳米"),
                 (ur"乌扇 ", ur"射干"),
+                (ur"苁蓉", ur"肉苁蓉"),
+                (ur"香豆豉", ur"豆豉"),
                 # may lost information 
+                (ur"黑山栀", "栀子"),
                 (ur"楂炭", ur"山楂"),
                 (ur"蒲黄炭", ur"蒲黄"),
                 (ur"鲜扁豆花", ur"扁豆花"),

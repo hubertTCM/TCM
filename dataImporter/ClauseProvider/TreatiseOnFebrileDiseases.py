@@ -26,7 +26,7 @@ class FebribleDiseaseProvider:
         content = ''
         if len(items) > 0:
             content = '\n'.join(items)
-            parser = PrescriptionParser(content, u'方') 
+            parser = PrescriptionParser(content, u'方', QuantityAdjustor()) 
             prescriptions = parser.get_prescriptions() 
             for prescription in prescriptions:
                 prescription.update({'comeFrom' : comeFrom})           

@@ -57,9 +57,9 @@ class KnownAliasProvider:
                 (ur"苁蓉", ur"肉苁蓉"),
                 (ur"香豆豉", ur"豆豉"),
                 (ur"肥栀子", ur"栀子"),
+                (ur"干苏叶", "苏叶"),
                 # may lost information
                 (ur"生竹茹", "竹茹"),
-                (ur"干苏叶", "苏叶"),
                 ("生地黄汁", "生地"), 
                 (ur"黑山栀", "栀子"),
                 (ur"楂炭", ur"山楂"),
@@ -78,7 +78,7 @@ class KnownAliasProvider:
                 (ur"小茴香炭", ur"小茴香"),
                 (ur"降香末", ur"降香"),
                 (ur"枳实汁", ur"枳实"),
-                (ur"姜汁", ur"生姜"), #莱菔子
+                (ur"姜汁", ur"生姜"), 
                 (ur"卜子", ur"莱菔子"),
                  ]
         return items

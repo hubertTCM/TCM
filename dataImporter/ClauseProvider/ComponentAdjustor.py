@@ -89,7 +89,8 @@ class QuantityAdjustor:
         previous_unit = None
         for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
             medical_name = component['medical']
-            if medical_name[-1] == "各":
+            apply_quantity_to_others = Utility.get_bool_value('applyQuantityToOthers', component)
+            if apply_quantity_to_others:
                 previous_quantity = component['quantity']
                 previous_unit = component['unit']
                 component['medical'] = medical_name[:len(medical_name)-1]

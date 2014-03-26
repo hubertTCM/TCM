@@ -39,7 +39,7 @@ class GoldenChamberProvider:
         clause = {'index':index, 'content' : content, 'category':category}        
         clause.update(self._come_from)
         
-        parser = PrescriptionParser(content, u"方：") 
+        parser = PrescriptionParser(content, u"方：", QuantityAdjustor()) 
         prescriptions =  parser.get_prescriptions()         
         for prescription in prescriptions:
             prescription.update(self._come_from)

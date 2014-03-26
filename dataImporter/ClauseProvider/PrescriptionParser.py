@@ -15,28 +15,57 @@ from ComponentAdjustor import *
 from dataImporter.Utils.Utility import *
 
 #TBD
+
+class ComponentAdjustor_jf:
+    def __init__(self):
+        self._end_tags = []
+        self._end_tags.append(u"手指大")
+        self._end_tags.append(u"如弹丸大")
+        self._end_tags.append(u"如指大")
+        self._end_tags.append(u"大者")
+        self._end_tags.append(u"鸡子大")
+        self._end_tags.append(u"如鸡子大")
+        self._end_tags.append(u"弹丸大")
+        self._end_tags.append(u"等分")
+        
+        self._end_tags.sort(key=lambda x: len(x), reverse=True) 
+        
+    def adjust(self, component):
+        herb = component['medical']
+        for item in self._end_tags:
+            if herb.endswith(item):
+                new_herb = herb[:len(herb)-len(item)]
+                component['medical'] = new_herb
+                break
+        return component
+
 class SingleComponentParser_jf:
-    def __init__(self, text):
+    def __init__(self, text, component_adjustor):
         self._source_text = text
         self._herb = text
         self._quantity_unit = None
+        self._apply_quantity_to_others = False
         self._comments = None 
+        self._component_adjustor = component_adjustor
         
     def __parse_quantity_comment__(self, text):
-        quantity_unit_pattern = ur"(各*[一二三四五六七八九十半百]+[^，]+)"
+        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，]+)"
         successed = False
         # quantity（comment）
-        m = re.compile(quantity_unit_pattern + ur"[^（）]*（([^（）]+)）").match(text)
+        m = re.compile(quantity_unit_pattern + ur"（([^（）]+)）").match(text)
         if m:
             self._quantity_unit = m.group(1).strip()
             self._comments = m.group(2).strip()
             successed = True
             
         if not successed:#（comment）quantity
-            m = re.compile(ur"（([^（）]+)）" + quantity_unit_pattern).match(text)
+            m = re.compile(ur"（([^（）]+)）([各]*)" + quantity_unit_pattern).match(text)
             if m:
-                self._quantity_unit = m.group(2).strip()
+                self._quantity_unit = m.group(3).strip()
                 self._comments = m.group(1).strip()
+                if len(m.group(2)) > 0:
+                    self._apply_quantity_to_others = True
+                    
                 successed = True
                 
         if not successed:#quantity
@@ -47,10 +76,12 @@ class SingleComponentParser_jf:
                 successed = True
                 
         if not successed:#comment
-            self._comments = text.strip()
+            m = re.compile(ur"（([^（）]+)）").match(text)
+            if m:
+                self._comments = m.group(1).strip()
     
     def __parse_normal_medical_name__(self):
-        pattern = ur"([^（）一二三四五六七八九十半百]+)(\W*)"
+        pattern = ur"([^（）一二三四五六七八九十半百各]+)(\W*)"
         m = re.compile(pattern).match(self._source_text)
         if m:
             self._herb = m.group(1).strip()
@@ -70,12 +101,19 @@ class SingleComponentParser_jf:
             quantity_parser = QuantityParser(self._quantity_unit)
             quantity, unit = quantity_parser.parse()
          
-        return {'medical': self._herb, 'quantity': quantity, 'unit': unit, 'comments': self._comments} 
+        component = {'medical': self._herb, 'quantity': quantity, 'unit': unit, 'comments': self._comments, 
+                     "applyQuantityToOthers":self._apply_quantity_to_others} 
+        
+        if self._component_adjustor:
+            component = self._component_adjustor.adjust(component)
+        
+        return component
     
 class PrescriptionParser:
-    def __init__(self, text, prescription_name_end_tag):
+    def __init__(self, text, prescription_name_end_tag, components_adjustor):
         self._source_text = text  
-        self._prescription_name_end_tag = prescription_name_end_tag       
+        self._prescription_name_end_tag = prescription_name_end_tag   
+        self._components_adjustor = components_adjustor    
         
     def __get_name__(self, text, appendix_content):
         '''
@@ -122,32 +160,15 @@ class PrescriptionParser:
             return None
         
         components = []
+        adjustor = ComponentAdjustor_jf()
         for item in items:
             item = item.strip()
             if len(item) > 0:
-                component_parser = SingleComponentParser_jf(item)
+                component_parser = SingleComponentParser_jf(item, adjustor)
                 components.append(component_parser.get_component())
-
-        #防风　桔梗　桂枝　人参　甘草各一两
-        components.reverse()
-        previous_quantity = None
-        previous_unit = None
-        for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
-            medical_name = component['medical']
-            if medical_name[-1] == "各":
-                previous_quantity = component['quantity']
-                previous_unit = component['unit']
-                component['medical'] = medical_name[:len(medical_name)-1]
-            else:
-                if not component['unit'] or len(component['unit'])== 0: 
-                    if not previous_unit > 0:
-                        component['quantity'] = previous_quantity
-                        component['unit'] = previous_unit
-                else:
-                    previous_quantity = None
-                    previous_unit = None             
-            
-        components.reverse()
+                
+        if self._components_adjustor:        
+            components = self._components_adjustor.adjust(components)
         
         if (len(components) == 0):
             print "*failed to get components from: " + text + '\n'
@@ -223,7 +244,7 @@ if __name__ == "__main__":
     
     for item in texts:
         print item + " "
-        sp = SingleComponentParser_jf(item)
+        sp = SingleComponentParser_jf(item, ComponentAdjustor_jf())
         component = sp.get_component()
         print Utility.convert_dict_to_string(component)
         

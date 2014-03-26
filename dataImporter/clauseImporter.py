@@ -66,7 +66,7 @@ class SingleClauseImporter:
 class Importer:
     def __init__(self):
         self._providers = []
-#        self._providers.append(FebribleDiseaseProvider())
+        self._providers.append(FebribleDiseaseProvider())
         self._providers.append(GoldenChamberProvider())
 #         self._providers.append(wbtb_provider(None))
     

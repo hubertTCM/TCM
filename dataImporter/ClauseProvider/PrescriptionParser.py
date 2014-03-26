@@ -14,9 +14,20 @@ append_ancestors_to_system_path(3)
 from ComponentAdjustor import *
 from dataImporter.Utils.Utility import *
 
-#TBD
-
-class ComponentAdjustor_jf:
+class AdjustorCollection:
+    def __init__(self):
+        self._adjustors = []
+        
+    def append(self, adjustor):
+        self._adjustors.append(adjustor)
+        
+    def adjust(self, item):
+        value = item
+        for adjustor in self._adjustors:
+            value = adjustor.adjust(value)
+        return value
+            
+class HerbNameAdjustor_jf:
     def __init__(self):
         self._end_tags = []
         self._end_tags.append(u"手指大")
@@ -27,16 +38,37 @@ class ComponentAdjustor_jf:
         self._end_tags.append(u"如鸡子大")
         self._end_tags.append(u"弹丸大")
         self._end_tags.append(u"等分")
+        self._end_tags.append(u"少许")
         
         self._end_tags.sort(key=lambda x: len(x), reverse=True) 
         
-    def adjust(self, component):
-        herb = component['medical']
+    def adjust(self, herb):
         for item in self._end_tags:
             if herb.endswith(item):
-                new_herb = herb[:len(herb)-len(item)]
-                component['medical'] = new_herb
-                break
+                return herb[:len(herb)-len(item)]
+        return herb
+
+class HerbNameMap_jf:
+    def __init__(self):
+        self._map = {u"瓜子":u"冬瓜子",
+                     u"瓜瓣":u"冬瓜子",
+                     u"生葛":u"葛根",
+                     u"食蜜":u"蜂蜜",
+                     u"蜜":u"蜂蜜",
+                     u"太一禹余粮":u"禹余粮"
+                     }
+    def adjust(self, herb):
+        if herb in self._map:
+            return self._map[herb]
+        return herb
+        
+class ComponentAdjustor_jf:
+    def __init__(self, herb_adjustor):        
+        self._herb_adjustor = herb_adjustor
+        
+    def adjust(self, component):
+        herb = component['medical']
+        component['medical'] = self._herb_adjustor.adjust(herb)
         return component
 
 class SingleComponentParser_jf:
@@ -152,6 +184,12 @@ class PrescriptionParser:
         '''
         if text.find(u'\u3002') >=0:
             return None
+        not_components = []
+        not_components.append(u"土瓜根方（附方佚）")
+        not_components.append(u"猪胆汁方（附方）")
+        for item in not_components:
+            if text.startswith(item):
+                return None
         
         items = []
         for item in [item.strip() for item in text.split(u'\u3000')]: #\u3000' is blank space:
@@ -160,11 +198,17 @@ class PrescriptionParser:
             return None
         
         components = []
-        adjustor = ComponentAdjustor_jf()
+        
+        herb_adjustor = AdjustorCollection()
+        herb_adjustor.append(HerbNameAdjustor_jf())
+        herb_adjustor.append(HerbNameMap_jf())
+        
+        component_adjustor = ComponentAdjustor_jf(herb_adjustor)
+        
         for item in items:
             item = item.strip()
             if len(item) > 0:
-                component_parser = SingleComponentParser_jf(item, adjustor)
+                component_parser = SingleComponentParser_jf(item, component_adjustor)
                 components.append(component_parser.get_component())
                 
         if self._components_adjustor:        
@@ -223,30 +267,33 @@ def print_prescription_list(prescriptions):
         print ""
     
 if __name__ == "__main__": 
-    parser = PrescriptionParser('', u'方：')
+    parser = PrescriptionParser('', u'方：', QuantityAdjustor())
     print parser.__get_name__(u'《千金》麻黄醇酒汤：', True)
-    parser.__parse_components__(u'桂枝一两十七铢（去皮）　芍药一两六铢　麻黄十六铢（去节）　生姜一两六铢（切）　杏仁十六个（去皮尖）　甘草一两二铢（炙）　大枣五枚（擘）')
-    texts = [u'甘草（炙）各十八铢',
-             u'庶（虫底）虫半升',
-             u'庶（虫底）虫二十枚',
-             u'庶（虫底）虫二十枚（熬，去足）',
-             u'栝蒌根各等分', 
-             u'半夏一分', 
-             u'五味子', 
-             u'蜀椒三分（去汗）', 
-             u'蜀椒（去汗）三分', 
-             u'蜀椒', 
-             u'蜀椒（去汗）', 
-             u'蜀椒（去汗）等分', 
-             u'蜀椒三分', 
-             u'蜀椒百分',
-             u'蜀椒三分半']     
-    
-    for item in texts:
-        print item + " "
-        sp = SingleComponentParser_jf(item, ComponentAdjustor_jf())
-        component = sp.get_component()
+    components = parser.__parse_components__(u'甘草（炙）各四两')
+    for component in components:
         print Utility.convert_dict_to_string(component)
+        
+#     texts = [u'甘草（炙）各十八铢',
+#              u'庶（虫底）虫半升',
+#              u'庶（虫底）虫二十枚',
+#              u'庶（虫底）虫二十枚（熬，去足）',
+#              u'栝蒌根各等分', 
+#              u'半夏一分', 
+#              u'五味子', 
+#              u'蜀椒三分（去汗）', 
+#              u'蜀椒（去汗）三分', 
+#              u'蜀椒', 
+#              u'蜀椒（去汗）', 
+#              u'蜀椒（去汗）等分', 
+#              u'蜀椒三分', 
+#              u'蜀椒百分',
+#              u'蜀椒三分半']     
+#     
+#     for item in texts:
+#         print item + " "
+#         sp = SingleComponentParser_jf(item, ComponentAdjustor_jf())
+#         component = sp.get_component()
+#         print Utility.convert_dict_to_string(component)
         
         
         

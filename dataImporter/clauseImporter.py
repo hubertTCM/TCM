@@ -8,6 +8,7 @@ from ClauseProvider.GoldenChamber import *
 from ClauseProvider.wbtb import wbtb_provider
 
 from dataImporter.Utils.Utility import *
+from dataImporter.Utils.HerbUtil import HerbUtility
 from DataSourceImporter import *
 from prescriptionImporter import *
 
@@ -68,7 +69,7 @@ class Importer:
         self._providers = []
         self._providers.append(FebribleDiseaseProvider())
         self._providers.append(GoldenChamberProvider())
-#         self._providers.append(wbtb_provider(None))
+        self._providers.append(wbtb_provider(None))
     
     def import_all_clauses(self):
         for source_provider in self._providers:
@@ -81,27 +82,52 @@ class Importer:
     
 
 if __name__ == "__main__":
-    def check_unimported_herb():
+    def process_all_components(process):
         importer = Importer()
-        unimported_herbs = []
         for source_provider in importer._providers:
             for clause in source_provider.get_all_clauses():
                 for prescription in clause['prescriptions']:
                     for component in prescription['components']:
-                        herb_name = component['medical']
-                        if herb_name in unimported_herbs:
-                            continue
-                        
-                        if len(Herb.objects.filter(name = herb_name)) == 0 and len(HerbAlias.objects.filter(name = herb_name)) == 0:
-                            unimported_herbs.append(herb_name)
-                            
-                            message = "!!!!!!!!!!!!" + herb_name + "   prescriptionName:" + prescription['name']
-                            if '_debug_source' in prescription:
-                                message = message + "   source:"+prescription['_debug_source']
-                            
-                            print message
+                        process(prescription, component)
+                        #yield prescription, component
+
+    def check_unimported_herb():
+        utility = HerbUtility()
+        unimported_herbs = []
+        def check_herb(prescription, component):
+            herb_name = component['medical']
+            if herb_name in unimported_herbs:
+                return
+            if not utility.is_herb(herb_name):
+                unimported_herbs.append(herb_name)                             
+                message = "herb " + herb_name + "   prescriptionName:" + prescription['name']
+                if '_debug_source' in prescription:
+                    message = message + "   source:"+prescription['_debug_source']                 
+                print message
+                
+        process_all_components(check_herb)
         
-    check_unimported_herb()
+    def check_unit():
+        all_units = []
+        def check_single_unit(prescription, component):
+            unit = component['unit']
+            if not unit:
+                return
+            
+            if unit in all_units:
+                return
+            
+            herb_name = component['medical']
+            all_units.append(unit)                            
+            message = "unit: " + unit + "   prescriptionName:" + prescription['name'] + " herb: " + herb_name
+            if '_debug_source' in prescription:
+                message = message + "   source:"+prescription['_debug_source']                 
+            print message
+    
+        process_all_components(check_single_unit)
+                
+#     check_unimported_herb()
+    check_unit()
     
 #     importer = Importer()
 #     importer.import_all_clauses()

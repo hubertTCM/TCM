@@ -101,7 +101,6 @@ class SinglePrescriptionImporter:
         if len(alias) > 0:
             return Herb.objects.get(name = alias[0].standardName.name)
             
-        print "!!!!!!!!!!!!!!!!! import herb " + name
         herb = Herb()
         herb.name = name
         herb.save()

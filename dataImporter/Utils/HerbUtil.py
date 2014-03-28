@@ -79,18 +79,11 @@ class ItemReplaceAdjustor:
 
 class MedicalNameAdjustor:
     def __init__(self):
-#         
-#         self._split_items =[
-#                       (ur"甘草乌梅", ur"甘草 乌梅"),
-#                       (ur"干姜黄连", ur"干姜 黄连")
-#
         self._patterns = []
         self._herbUtility = HerbUtility() 
         for name in self._herbUtility.get_all_herbs():
             self._patterns.append(' *'.join(ch for ch in name)) 
-        
-        #self.__build_items_should_split__()
-              
+                      
     def __get_contained_herbs__(self, content):
         herbs = []
         for herb in self._herbUtility.get_all_herbs():
@@ -109,12 +102,9 @@ class MedicalNameAdjustor:
                 if item in self._herbUtility.get_all_herbs():
                     continue
                 
-                split_items.append( (item, herb1 + " " + herb2) )
-#         split_items.sort(key=lambda x: len(itemgetter(x[0])), reverse=True)    
-        split_items.sort(key=lambda x: len(x[0]), reverse=True) 
-#         for item in split_items:
-#             print item[0],  "  *  ", item[1]
-        #[print itemgetter(item[0]) for item in split_items]        
+                split_items.append( (item, herb1 + " " + herb2) ) 
+                 
+        split_items.sort(key=lambda x: len(x[0]), reverse=True)        
         return split_items
             
     def adjust(self, content):    

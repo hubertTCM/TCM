@@ -81,17 +81,18 @@ class SingleComponentParser_jf:
         self._component_adjustor = component_adjustor
         
     def __parse_quantity_comment__(self, text):
-        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^，]+)"
+        quantity_unit_pattern = ur"([一二三四五六七八九十半百]+[^（(]+)"
+        comment_pattern = ur"[（(]([\W]+)[)）]"
         successed = False
         # quantity（comment）
-        m = re.compile(quantity_unit_pattern + ur"（([^（）]+)）").match(text)
+        m = re.compile(quantity_unit_pattern + comment_pattern).match(text)
         if m:
             self._quantity_unit = m.group(1).strip()
             self._comments = m.group(2).strip()
             successed = True
             
         if not successed:#（comment）quantity
-            m = re.compile(ur"（([^（）]+)）([各]*)" + quantity_unit_pattern).match(text)
+            m = re.compile(comment_pattern + ur"([各]*)" + quantity_unit_pattern).match(text)
             if m:
                 self._quantity_unit = m.group(3).strip()
                 self._comments = m.group(1).strip()
@@ -108,7 +109,7 @@ class SingleComponentParser_jf:
                 successed = True
                 
         if not successed:#comment
-            m = re.compile(ur"（([^（）]+)）").match(text)
+            m = re.compile(comment_pattern).match(text)
             if m:
                 self._comments = m.group(1).strip()
     
@@ -273,27 +274,33 @@ if __name__ == "__main__":
     for component in components:
         print Utility.convert_dict_to_string(component)
         
-#     texts = [u'甘草（炙）各十八铢',
-#              u'庶（虫底）虫半升',
-#              u'庶（虫底）虫二十枚',
-#              u'庶（虫底）虫二十枚（熬，去足）',
-#              u'栝蒌根各等分', 
-#              u'半夏一分', 
-#              u'五味子', 
-#              u'蜀椒三分（去汗）', 
-#              u'蜀椒（去汗）三分', 
-#              u'蜀椒', 
-#              u'蜀椒（去汗）', 
-#              u'蜀椒（去汗）等分', 
-#              u'蜀椒三分', 
-#              u'蜀椒百分',
-#              u'蜀椒三分半']     
-#     
-#     for item in texts:
-#         print item + " "
-#         sp = SingleComponentParser_jf(item, ComponentAdjustor_jf())
-#         component = sp.get_component()
-#         print Utility.convert_dict_to_string(component)
+    
+    herb_adjustor = AdjustorCollection()
+    herb_adjustor.append(HerbNameAdjustor_jf())
+    herb_adjustor.append(HerbNameMap_jf())
+        
+    texts = [u'川乌五枚（父（口旁）咀，以蜜二升，煎取一升，即出乌头）',
+             u'甘草（炙）各十八铢',
+             u'庶（虫底）虫半升',
+             u'庶（虫底）虫二十枚',
+             u'庶（虫底）虫二十枚（熬，去足）',
+             u'栝蒌根各等分', 
+             u'半夏一分', 
+             u'五味子', 
+             u'蜀椒三分（去汗）', 
+             u'蜀椒（去汗）三分', 
+             u'蜀椒', 
+             u'蜀椒（去汗）', 
+             u'蜀椒（去汗）等分', 
+             u'蜀椒三分', 
+             u'蜀椒百分',
+             u'蜀椒三分半']     
+     
+    for item in texts:
+        print item + " "
+        sp = SingleComponentParser_jf(item, ComponentAdjustor_jf(herb_adjustor))
+        component = sp.get_component()
+        print Utility.convert_dict_to_string(component)
         
         
         

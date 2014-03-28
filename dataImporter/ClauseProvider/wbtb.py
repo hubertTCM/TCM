@@ -33,7 +33,7 @@ class SingleComponentParser_wbtb:
         self._comments = None
    
     def __parse_quantity_comment__(self, text):   
-        quantity_unit_pattern = ur"(各*[一二三四五六七八九十半百]+[^，])"
+        quantity_unit_pattern = ur"(各*[一二三四五六七八九十半百]+[^，]+)"
         successed = False
         # （quantity, comment）
         m = re.compile(ur"（" + quantity_unit_pattern + ur"[，]([^（）]+)）").match(text)
@@ -279,31 +279,24 @@ class wbtb_provider:
         return clauses
                 
 if __name__ == "__main__":   
-    source_folder = os.path.dirname(__file__)
-    source_folder = os.path.join(source_folder, 'wbtb')   
-    provider = wbtb_provider(source_folder)
-    provider.get_all_clauses()
+#     source_folder = os.path.dirname(__file__)
+#     source_folder = os.path.join(source_folder, 'wbtb')   
+#     provider = wbtb_provider(source_folder)
+#     provider.get_all_clauses()
+     
     
-#    
-#     items = [
+    items = [
 #             u"鸡子黄（生用，一枚）",
 #             u"鸡子黄（一枚，生用）",
 #             u"鸡子黄（一枚）",
 #             u"鸡子黄（生用）",
 #             u"鸡子黄",
 #             u"百合（生用，一枚）",
-#             u"百合"
-#             ]
-#     #pattern = ur"([^（）]+)（([^（）]+)）"
-#     quantity_pattern = ur"([一二三四五六七八九十百]+\W+)" 
-#     pattern = ur"([^（）]+)（" + quantity_pattern + ur"[，]([^（）]+)"
-#     
-#     p = re.compile(pattern)
-#     for item in items:
-#         print item
-#         m = p.match(item)
-#         if m:
-#             print "        ==         ", m.group(1), " 0  ", m.group(2), " 0  ", m.group(3)
-#         else:
-#             print item, "%"
+#             u"百合",
+            u"白术（炒焦，一钱五分）"
+            ]
+    for item in items:
+        sp = SingleComponentParser_wbtb(item)
+        component = sp.get_component()
+        print Utility.convert_dict_to_string(component)
     print "done"

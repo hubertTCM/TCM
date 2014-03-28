@@ -75,8 +75,8 @@ class QuantityParser:
             self._quantity = Utility.convert_number(str_quantity)
         if len(pairs) == 2:
             str_quantity, self._unit = pairs[0]
-            self._quantity = Utility.convert_number(str_quantity)
             if (not pairs[1][1] or len(pairs[1][1]) == 0 ) and pairs[1][0] == u'半':
+                self._quantity = Utility.convert_number(str_quantity)
                 self._quantity += 0.5
             
         

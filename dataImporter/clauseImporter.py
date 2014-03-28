@@ -88,8 +88,8 @@ if __name__ == "__main__":
             for clause in source_provider.get_all_clauses():
                 for prescription in clause['prescriptions']:
                     for component in prescription['components']:
-                        process(prescription, component)
-                        #yield prescription, component
+                        if process:
+                            process(prescription, component)
 
     def check_unimported_herb():
         utility = HerbUtility()
@@ -111,23 +111,27 @@ if __name__ == "__main__":
         all_units = []
         def check_single_unit(prescription, component):
             unit = component['unit']
-            if not unit:
+            if not unit or unit in all_units:
                 return
-            
-            if unit in all_units:
-                return
-            
+                        
             herb_name = component['medical']
             all_units.append(unit)                            
             message = "unit: " + unit + "   prescriptionName:" + prescription['name'] + " herb: " + herb_name
             if '_debug_source' in prescription:
                 message = message + "   source:"+prescription['_debug_source']                 
             print message
-    
-        process_all_components(check_single_unit)
+            
+    def print_component_info(prescription, component):
+        message = Utility.convert_dict_to_string(component) + " prescriptionName:" + prescription['name']
+        if '_debug_source' in prescription:
+            message = message + "   source:"+prescription['_debug_source']  
+        print message
+        
+    process_all_components(print_component_info)
                 
 #     check_unimported_herb()
     check_unit()
+    process_all_components(None)
     
 #     importer = Importer()
 #     importer.import_all_clauses()
